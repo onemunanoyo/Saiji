@@ -3,6 +3,7 @@ name: Build and Release Extension
 on:
   push:
     branches: [ main ]
+    # 手動でタグを打った時も動作するように残しておきます
     tags:
       - 'v*'
   pull_request:
@@ -15,33 +16,49 @@ jobs:
       contents: write
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # タグ履歴を取得するために必須
 
-    - name: Use Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
+      # 1. 自動でタグをインクリメントしてプッシュするステップ
+      - name: Bump version and push tag
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        id: tag_version
+        uses: anothrNick/github-tag-action@1.64.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+          DEFAULT_BUMP: patch # 常に 0.0.1 増やす設定
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
 
-    - name: Build
-      run: npm run build
-      env:
-        NODE_ENV: production
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Zip extension
-      if: startsWith(github.ref, 'refs/tags/')
-      run: |
-        cd dist
-        zip -r ../saiji-extension.zip .
+      - name: Build
+        run: npm run build
+        env:
+          NODE_ENV: production
 
-    - name: Create Release
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: softprops/action-gh-release@v1
-      with:
-        files: saiji-extension.zip
-        generate_release_notes: true
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # 2. 生成されたタグ（または手動タグ）がある場合のみ実行
+      - name: Zip extension
+        if: steps.tag_version.outputs.new_tag || startsWith(github.ref, 'refs/tags/')
+        run: |
+          cd dist
+          zip -r ../saiji-extension.zip .
+
+      - name: Create Release
+        if: steps.tag_version.outputs.new_tag || startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          # 自動生成されたタグ、またはトリガーとなったタグ名を使用
+          tag_name: ${{ steps.tag_version.outputs.new_tag || github.ref_name }}
+          files: saiji-extension.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
