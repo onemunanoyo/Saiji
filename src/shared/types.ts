@@ -1,7 +1,15 @@
+// ── NgWord ───────────────────────────────────────────────
+export type NgWordPlatform = 'both' | 'youtube' | 'twitch';
+
+export interface NgWord {
+  word:     string;
+  platform: NgWordPlatform;
+}
+
 // ── Storage ───────────────────────────────────────────────
 export interface StorageSchema {
   /** 登録済み NGワード一覧 */
-  ngWords: string[];
+  ngWords: NgWord[];
   /** BAN された author-id の配列 */
   bannedIds: string[];
   /** フィルタリング全体の ON/OFF */
@@ -19,7 +27,7 @@ export type Message =
     | { type: 'REMOUNT_OBSERVER' }
     | { type: 'ADD_TO_BLACKLIST'; authorId: string }
     | { type: 'SYNC_BLACKLIST';   bannedIds: string[] }
-    | { type: 'SYNC_NG_WORDS';   ngWords: string[] }
+    | { type: 'SYNC_NG_WORDS';   ngWords: NgWord[] }   // string[] → NgWord[]
     | { type: 'RESET_COUNTER' }
     | { type: 'CLEAR_BLACKLIST' }
     | { type: 'GET_STATS' }
@@ -48,8 +56,11 @@ export interface FilterResult {
 
 // ── FilterState（content_script のメモリ状態）────────────
 export interface FilterState {
-  ngWords:          string[];
+  ngWords:          NgWord[];   // string[] → NgWord[]
   bannedUsers:      Set<string>;
   violationCounter: Map<string, number>;
   filterEnabled:    boolean;
 }
+
+// ── WatchMode ─────────────────────────────────────────────
+export type WatchMode = 'live' | 'archive';

@@ -1,4 +1,4 @@
-import type { Message, StatsResponse } from '../shared/types';
+import type { Message, NgWord, StatsResponse } from '../shared/types';
 import {
   ALARM_RESET_COUNTER,
   ALARM_CLEAR_BLACKLIST,
@@ -114,7 +114,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (changes['ngWords']) {
     broadcastToAllTabs({
       type: 'SYNC_NG_WORDS',
-      ngWords: changes['ngWords'].newValue as string[],
+      ngWords: changes['ngWords'].newValue as NgWord[],
     });
   }
 });

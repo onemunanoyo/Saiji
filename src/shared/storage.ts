@@ -1,4 +1,4 @@
-import type { StorageSchema, StorageKey } from './types';
+import type { StorageSchema, StorageKey, NgWord } from './types';
 
 export const DEFAULT_STORAGE: StorageSchema = {
   ngWords:         [],
@@ -38,13 +38,15 @@ export async function clearBlacklist(): Promise<void> {
   await setStorage('blUpdatedAt', Date.now());
 }
 
-export async function addNgWord(word: string): Promise<void> {
+export async function addNgWord(word: NgWord): Promise<void> {
   const current = await getStorage('ngWords');
-  if (!word.trim() || current.includes(word)) return;
+  if (!word.word.trim()) return;
+  // 同じワード・同じplatformの重複を排除
+  if (current.some(w => w.word === word.word && w.platform === word.platform)) return;
   await setStorage('ngWords', [...current, word]);
 }
 
-export async function removeNgWord(word: string): Promise<void> {
+export async function removeNgWord(word: string, platform: NgWord['platform']): Promise<void> {
   const current = await getStorage('ngWords');
-  await setStorage('ngWords', current.filter(w => w !== word));
+  await setStorage('ngWords', current.filter(w => !(w.word === word && w.platform === platform)));
 }

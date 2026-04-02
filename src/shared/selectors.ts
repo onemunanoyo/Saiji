@@ -1,17 +1,17 @@
-import type { Platform } from './types';
+import type { Platform, WatchMode } from './types';
 
 export const SELECTORS = {
   youtube: {
     iframeSelector: 'iframe#chatframe',
     chatContainer:  '#items',
-    authorIdAttr:   'author-id',
+    authorName:     '#author-name',
     messageText:    '#message',
   },
   twitch: {
     iframeSelector: null as string | null,
     chatContainer:  '.chat-scrollable-area__message-container',
-    authorIdAttr:   'data-user-id',
-    messageText:    '.message',
+    authorName:     '[data-a-user]',
+    messageText:    '.chat-line__message',
   },
 } as const;
 
@@ -22,11 +22,20 @@ export function detectPlatform(): Platform | null {
   return null;
 }
 
+/** ライブ配信かアーカイブかを判定 */
+export function detectWatchMode(): WatchMode {
+  // YouTube: ytd-watch-flexy の is-live 属性で判定
+  const isLive = document.querySelector('ytd-watch-flexy')?.getAttribute('is-live');
+  if (isLive !== null && isLive !== undefined) return 'live';
+  // Twitch は常にライブ
+  if (location.hostname.includes('twitch.tv')) return 'live';
+  return 'archive';
+}
+
 /** チャット欄が属する document を取得（YouTube は iframe 内） */
 export function getChatDocument(platform: Platform): Document | null {
   const iframeSel = SELECTORS[platform].iframeSelector;
   if (!iframeSel) return document;
-
   const iframe = document.querySelector(iframeSel) as HTMLIFrameElement | null;
   return iframe?.contentDocument ?? null;
 }
@@ -37,9 +46,15 @@ export function getChatContainer(platform: Platform): Element | null {
   return doc?.querySelector(SELECTORS[platform].chatContainer) ?? null;
 }
 
-/** コメント要素から author-id を取得 */
+/** コメント要素からユーザー識別子を取得 */
 export function getAuthorId(el: Element, platform: Platform): string | null {
-  return el.getAttribute(SELECTORS[platform].authorIdAttr) ?? null;
+  const sel = SELECTORS[platform].authorName;
+  const authorEl = el.querySelector(sel);
+  if (!authorEl) return null;
+  if (platform === 'twitch') {
+    return authorEl.getAttribute('data-a-user') ?? null;
+  }
+  return authorEl.textContent?.trim() ?? null;
 }
 
 /** コメント要素からテキストを取得 */
