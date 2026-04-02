@@ -83,8 +83,13 @@ function mountLiveObserver(
       for (const node of mutation.addedNodes) {
         if (!(node instanceof Element)) continue;
         if (delay > 0) {
+          // 追加直後に非表示にして遅延後に判定
+          (node as HTMLElement).style.visibility = 'hidden';
           setTimeout(() => {
             const result = processElement(node, platform, state, onBan);
+            if (!result.removed) {
+              (node as HTMLElement).style.visibility = 'visible';
+            }
             if (result.removed) onFiltered();
           }, delay);
         } else {

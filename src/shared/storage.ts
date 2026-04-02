@@ -38,11 +38,17 @@ export async function clearBlacklist(): Promise<void> {
   await setStorage('blUpdatedAt', Date.now());
 }
 
+function normalizeWord(str: string): string {
+  return str
+      .replace(/[Ａ-Ｚａ-ｚ０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
+      .toLowerCase();
+}
+
 export async function addNgWord(word: NgWord): Promise<void> {
   const current = await getStorage('ngWords');
   if (!word.word.trim()) return;
-  // 同じワード・同じplatformの重複を排除
-  if (current.some(w => w.word === word.word && w.platform === word.platform)) return;
+  // 正規化した上で重複チェック（w・ｗ・Wは同一扱い）
+  if (current.some(w => normalizeWord(w.word) === normalizeWord(word.word) && w.platform === word.platform)) return;
   await setStorage('ngWords', [...current, word]);
 }
 

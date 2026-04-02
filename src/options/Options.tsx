@@ -4,6 +4,12 @@ import { getStorage, addNgWord, removeNgWord, removeBannedId } from '../shared/s
 
 type Tab = 'ngwords' | 'blacklist';
 
+function normalize(str: string): string {
+  return str
+      .replace(/[Ａ-Ｚａ-ｚ０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
+      .toLowerCase();
+}
+
 // プラットフォームトグル: both → youtube → twitch → both
 const PLATFORM_CYCLE: NgWordPlatform[] = ['both', 'youtube', 'twitch'];
 
@@ -47,8 +53,8 @@ export default function Options() {
   async function handleAdd() {
     const word = input.trim();
     if (!word) { setError('ワードを入力してください'); return; }
-    if (ngWords.some(w => w.word === word && w.platform === platform)) {
-      setError('同じワード・同じ対象がすでに登録されています'); return;
+    if (ngWords.some(w => normalize(w.word) === normalize(word) && w.platform === platform)) {
+      setError('同じワード・同じ対象がすでに登録されています（表記違いを含む）'); return;
     }
     await addNgWord({ word, platform });
     setInput('');

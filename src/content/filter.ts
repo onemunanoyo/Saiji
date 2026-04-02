@@ -3,6 +3,13 @@ import { getAuthorId, getMessageText } from '../shared/selectors';
 
 const VIOLATION_THRESHOLD = 3;
 
+/** 全角英数字を半角に変換 + 小文字化 */
+function normalize(str: string): string {
+  return str
+      .replace(/[Ａ-Ｚａ-ｚ０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
+      .toLowerCase();
+}
+
 export function processElement(
     el: Element,
     platform: Platform,
@@ -22,11 +29,11 @@ export function processElement(
     return { removed: true, reason: 'blacklisted', authorId };
   }
 
-  // ② NGワード判定（platform フィルタあり）
+  // ② NGワード判定（platform フィルタ + 正規化）
+  const normalizedText = normalize(text);
   const matched = state.ngWords.some(ng => {
-    // platform が 'both' または現在のプラットフォームと一致するワードのみ判定
     if (ng.platform !== 'both' && ng.platform !== platform) return false;
-    return text.toLowerCase().includes(ng.word.toLowerCase());
+    return normalizedText.includes(normalize(ng.word));
   });
 
   if (!matched) {
