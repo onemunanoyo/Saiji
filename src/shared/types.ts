@@ -18,6 +18,8 @@ export interface StorageSchema {
   blUpdatedAt: number;
   /** セッション中の非表示件数 (popup 表示用) */
   sessionFiltered: number;
+  /** コメント送信ロック ON/OFF（寝落ち誤送信防止） */
+  commentLockEnabled: boolean;
 }
 
 export type StorageKey = keyof StorageSchema;
@@ -31,7 +33,8 @@ export type Message =
     | { type: 'RESET_COUNTER' }
     | { type: 'CLEAR_BLACKLIST' }
     | { type: 'GET_STATS' }
-    | { type: 'TOGGLE_FILTER';   enabled: boolean };
+    | { type: 'TOGGLE_FILTER';        enabled: boolean }
+    | { type: 'TOGGLE_COMMENT_LOCK'; enabled: boolean };
 
 export interface StatsResponse {
   filtered: number;

@@ -3,14 +3,19 @@ import type { Message, StatsResponse } from '../shared/types';
 import { getStorage, setStorage } from '../shared/storage';
 
 export default function Popup() {
-  const [enabled,  setEnabled]  = useState(true);
-  const [stats,    setStats]    = useState<StatsResponse>({ filtered: 0, banned: 0 });
-  const [loading,  setLoading]  = useState(true);
+  const [enabled,     setEnabled]     = useState(true);
+  const [commentLock, setCommentLock] = useState(false);
+  const [stats,       setStats]       = useState<StatsResponse>({ filtered: 0, banned: 0 });
+  const [loading,     setLoading]     = useState(true);
 
   useEffect(() => {
     async function load() {
-      const en = await getStorage('filterEnabled');
+      const [en, lock] = await Promise.all([
+        getStorage('filterEnabled'),
+        getStorage('commentLockEnabled'),
+      ]);
       setEnabled(en);
+      setCommentLock(lock);
       chrome.runtime.sendMessage({ type: 'GET_STATS' } satisfies Message, (res: StatsResponse) => {
         if (res) setStats(res);
       });
@@ -24,6 +29,14 @@ export default function Popup() {
     setEnabled(next);
     await setStorage('filterEnabled', next);
     const msg: Message = { type: 'TOGGLE_FILTER', enabled: next };
+    chrome.runtime.sendMessage(msg);
+  }
+
+  async function toggleCommentLock() {
+    const next = !commentLock;
+    setCommentLock(next);
+    await setStorage('commentLockEnabled', next);
+    const msg: Message = { type: 'TOGGLE_COMMENT_LOCK', enabled: next };
     chrome.runtime.sendMessage(msg);
   }
 
@@ -56,8 +69,16 @@ export default function Popup() {
         フィルタを{enabled ? 'OFF にする' : 'ON にする'}
       </button>
 
+      {/* コメントロック */}
+      <button
+        style={{ ...s.btn, background: commentLock ? '#F59E0B' : '#E5E7EB', color: commentLock ? '#fff' : '#374151' }}
+        onClick={toggleCommentLock}
+      >
+        コメントロック {commentLock ? 'OFF にする' : 'ON にする'}
+      </button>
+
       {/* 設定へ */}
-      <button style={{ ...s.btn, background: '#F3F4F6', color: '#374151', marginTop: 6 }} onClick={openOptions}>
+      <button style={{ ...s.btn, background: '#F3F4F6', color: '#374151' }} onClick={openOptions}>
         設定・NGワード管理
       </button>
     </div>

@@ -1,11 +1,12 @@
 import type { StorageSchema, StorageKey, NgWord } from './types';
 
 export const DEFAULT_STORAGE: StorageSchema = {
-  ngWords:         [],
-  bannedIds:       [],
-  filterEnabled:   true,
-  blUpdatedAt:     Date.now(),
-  sessionFiltered: 0,
+  ngWords:            [],
+  bannedIds:          [],
+  filterEnabled:      true,
+  blUpdatedAt:        Date.now(),
+  sessionFiltered:    0,
+  commentLockEnabled: false,
 };
 
 export async function getStorage<K extends StorageKey>(key: K): Promise<StorageSchema[K]> {

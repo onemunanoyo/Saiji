@@ -3,6 +3,7 @@ import { getStorageAll, setStorage } from '../shared/storage';
 import { detectPlatform, detectWatchMode } from '../shared/selectors';
 import type { FilterState } from '../shared/types';
 import { mountObserver, dismountObserver } from './observer';
+import { mountCommentLock, dismountCommentLock } from './commentLock';
 
 const _platform = detectPlatform();
 if (!_platform) throw new Error('[Saiji] 対象外プラットフォーム');
@@ -16,6 +17,7 @@ const state: FilterState = {
 };
 
 let sessionFiltered = 0;
+let commentLockEnabled = false;
 
 async function init(): Promise<void> {
   const storage = await getStorageAll();
@@ -23,10 +25,12 @@ async function init(): Promise<void> {
   state.bannedUsers   = new Set(storage.bannedIds);
   state.filterEnabled = storage.filterEnabled;
   sessionFiltered     = storage.sessionFiltered ?? 0;
+  commentLockEnabled  = storage.commentLockEnabled ?? false;
 
   const mode = detectWatchMode();
   console.info(`[Saiji] 起動 (${platform} / ${mode})`);
   mountObserver(platform, mode, state, handleFiltered, handleBan);
+  if (commentLockEnabled) mountCommentLock(platform);
 }
 
 function handleFiltered(): void {
@@ -45,6 +49,8 @@ chrome.runtime.onMessage.addListener((msg: Message) => {
     case 'REMOUNT_OBSERVER': {
       const mode = detectWatchMode();
       mountObserver(platform, mode, state, handleFiltered, handleBan);
+      // SPA 遷移後もコメントロック状態を引き継ぐ
+      if (commentLockEnabled) mountCommentLock(platform);
       break;
     }
     case 'SYNC_BLACKLIST':
@@ -66,6 +72,14 @@ chrome.runtime.onMessage.addListener((msg: Message) => {
       } else {
         const mode = detectWatchMode();
         mountObserver(platform, mode, state, handleFiltered, handleBan);
+      }
+      break;
+    case 'TOGGLE_COMMENT_LOCK':
+      commentLockEnabled = msg.enabled;
+      if (msg.enabled) {
+        mountCommentLock(platform);
+      } else {
+        dismountCommentLock();
       }
       break;
   }

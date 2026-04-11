@@ -103,6 +103,13 @@ async function handleMessage(
       break;
     }
 
+    case 'TOGGLE_COMMENT_LOCK': {
+      await setStorage('commentLockEnabled', msg.enabled);
+      broadcastToAllTabs(msg);
+      sendResponse();
+      break;
+    }
+
     default:
       sendResponse();
   }
