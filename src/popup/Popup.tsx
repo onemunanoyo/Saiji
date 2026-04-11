@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Message, StatsResponse } from '../shared/types';
 import { getStorage, setStorage } from '../shared/storage';
+import { t } from '../shared/i18n';
 
 export default function Popup() {
   const [enabled,     setEnabled]     = useState(true);
@@ -45,7 +46,7 @@ export default function Popup() {
   }
 
   if (loading) {
-    return <div style={s.wrap}><p style={s.muted}>読み込み中...</p></div>;
+    return <div style={s.wrap}><p style={s.muted}>{t('loading')}</p></div>;
   }
 
   return (
@@ -54,19 +55,19 @@ export default function Popup() {
       <div style={s.header}>
         <span style={s.title}>塞耳 Saiji</span>
         <span style={{ ...s.badge, background: enabled ? '#4F46E5' : '#9CA3AF' }}>
-          {enabled ? 'ON' : 'OFF'}
+          {enabled ? t('badge_on') : t('badge_off')}
         </span>
       </div>
 
       {/* 統計 */}
       <div style={s.stats}>
-        <Stat label="非表示" value={stats.filtered} unit="件" />
-        <Stat label="追放"   value={stats.banned}   unit="人" />
+        <Stat label={t('stat_hidden_label')} value={stats.filtered} unit={t('stat_hidden_unit')} />
+        <Stat label={t('stat_banned_label')} value={stats.banned}   unit={t('stat_banned_unit')} />
       </div>
 
       {/* ON/OFF トグル */}
       <button style={{ ...s.btn, background: enabled ? '#EF4444' : '#4F46E5' }} onClick={toggle}>
-        フィルタを{enabled ? 'OFF にする' : 'ON にする'}
+        {enabled ? t('filter_turn_off') : t('filter_turn_on')}
       </button>
 
       {/* コメントロック */}
@@ -74,12 +75,12 @@ export default function Popup() {
         style={{ ...s.btn, background: commentLock ? '#F59E0B' : '#E5E7EB', color: commentLock ? '#fff' : '#374151' }}
         onClick={toggleCommentLock}
       >
-        コメントロック {commentLock ? 'OFF にする' : 'ON にする'}
+        {commentLock ? t('comment_lock_turn_off') : t('comment_lock_turn_on')}
       </button>
 
       {/* 設定へ */}
       <button style={{ ...s.btn, background: '#F3F4F6', color: '#374151' }} onClick={openOptions}>
-        設定・NGワード管理
+        {t('open_settings')}
       </button>
     </div>
   );

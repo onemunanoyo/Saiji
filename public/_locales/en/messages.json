@@ -1,0 +1,42 @@
+{
+  "ext_name":        { "message": "Saiji" },
+  "ext_description": { "message": "Filters unwanted comments from YouTube and Twitch live chats" },
+
+  "loading":         { "message": "Loading..." },
+  "badge_on":        { "message": "ON" },
+  "badge_off":       { "message": "OFF" },
+
+  "stat_hidden_label": { "message": "Hidden" },
+  "stat_hidden_unit":  { "message": "" },
+  "stat_banned_label": { "message": "Banned" },
+  "stat_banned_unit":  { "message": "" },
+
+  "filter_turn_off":       { "message": "Turn filter OFF" },
+  "filter_turn_on":        { "message": "Turn filter ON" },
+  "comment_lock_turn_off": { "message": "Unlock comments" },
+  "comment_lock_turn_on":  { "message": "Lock comments" },
+  "open_settings":         { "message": "Settings / NG Words" },
+
+  "options_title": { "message": "Saiji — Settings" },
+  "tab_ngwords": {
+    "message": "NG Words ($COUNT$)",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "tab_blacklist": {
+    "message": "Banned List ($COUNT$)",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+
+  "platform_toggle_title":  { "message": "Switch target platform" },
+  "ng_input_placeholder":   { "message": "Enter NG word (Enter to add)" },
+  "add_button":             { "message": "Add" },
+  "platform_hint_both":     { "message": "Applied to both platforms" },
+  "platform_hint_youtube":  { "message": "Applied to YouTube only" },
+  "platform_hint_twitch":   { "message": "Applied to Twitch only" },
+  "error_empty_word":       { "message": "Please enter a word" },
+  "error_duplicate_word":   { "message": "This word is already registered (including similar spellings)" },
+  "ng_empty":               { "message": "No NG words registered" },
+  "blacklist_empty":        { "message": "No banned users" },
+  "remove_button":          { "message": "Unban" },
+  "delete_button":          { "message": "Delete" }
+}

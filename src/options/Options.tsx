@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { NgWord, NgWordPlatform } from '../shared/types';
 import { getStorage, addNgWord, removeNgWord, removeBannedId } from '../shared/storage';
+import { t } from '../shared/i18n';
 
 type Tab = 'ngwords' | 'blacklist';
 
@@ -52,9 +53,9 @@ export default function Options() {
 
   async function handleAdd() {
     const word = input.trim();
-    if (!word) { setError('ワードを入力してください'); return; }
+    if (!word) { setError(t('error_empty_word')); return; }
     if (ngWords.some(w => normalize(w.word) === normalize(word) && w.platform === platform)) {
-      setError('同じワード・同じ対象がすでに登録されています（表記違いを含む）'); return;
+      setError(t('error_duplicate_word')); return;
     }
     await addNgWord({ word, platform });
     setInput('');
@@ -78,13 +79,15 @@ export default function Options() {
         <div style={s.card}>
 
           <div style={s.header}>
-            <h1 style={s.title}>塞耳 Saiji — 設定</h1>
+            <h1 style={s.title}>{t('options_title')}</h1>
           </div>
 
           <div style={s.tabs}>
-            {(['ngwords', 'blacklist'] as Tab[]).map(t => (
-                <button key={t} style={{ ...s.tab, ...(tab === t ? s.tabActive : {}) }} onClick={() => setTab(t)}>
-                  {t === 'ngwords' ? `NGワード (${ngWords.length})` : `追放リスト (${bannedIds.length})`}
+            {(['ngwords', 'blacklist'] as Tab[]).map(t_ => (
+                <button key={t_} style={{ ...s.tab, ...(tab === t_ ? s.tabActive : {}) }} onClick={() => setTab(t_)}>
+                  {t_ === 'ngwords'
+                    ? t('tab_ngwords', String(ngWords.length))
+                    : t('tab_blacklist', String(bannedIds.length))}
                 </button>
             ))}
           </div>
@@ -98,7 +101,7 @@ export default function Options() {
                   <button
                       style={{ ...s.platformBtn, ...PLATFORM_STYLE[platform] }}
                       onClick={cyclePlatform}
-                      title="対象プラットフォームを切り替え"
+                      title={t('platform_toggle_title')}
                   >
                     {PLATFORM_LABEL[platform]}
                   </button>
@@ -108,22 +111,22 @@ export default function Options() {
                       value={input}
                       onChange={e => { setInput(e.target.value); setError(''); }}
                       onKeyDown={e => e.key === 'Enter' && handleAdd()}
-                      placeholder="NGワードを入力（Enter で追加）"
+                      placeholder={t('ng_input_placeholder')}
                   />
-                  <button style={s.addBtn} onClick={handleAdd}>追加</button>
+                  <button style={s.addBtn} onClick={handleAdd}>{t('add_button')}</button>
                 </div>
 
                 {/* トグルの説明 */}
                 <p style={s.hint}>
-                  {platform === 'both'    && '両方のプラットフォームに適用されます'}
-                  {platform === 'youtube' && 'YouTube のみに適用されます'}
-                  {platform === 'twitch'  && 'Twitch のみに適用されます'}
+                  {platform === 'both'    && t('platform_hint_both')}
+                  {platform === 'youtube' && t('platform_hint_youtube')}
+                  {platform === 'twitch'  && t('platform_hint_twitch')}
                 </p>
 
                 {error && <p style={s.error}>{error}</p>}
 
                 {ngWords.length === 0
-                    ? <p style={s.empty}>NGワードが登録されていません</p>
+                    ? <p style={s.empty}>{t('ng_empty')}</p>
                     : <ul style={s.list}>
                       {ngWords.map((ng, i) => (
                           <li key={i} style={s.item}>
@@ -132,7 +135,7 @@ export default function Options() {
                         {PLATFORM_LABEL[ng.platform]}
                       </span>
                             <span style={s.wordText}>{ng.word}</span>
-                            <button style={s.delBtn} onClick={() => handleRemoveNg(ng.word, ng.platform)}>削除</button>
+                            <button style={s.delBtn} onClick={() => handleRemoveNg(ng.word, ng.platform)}>{t('delete_button')}</button>
                           </li>
                       ))}
                     </ul>
@@ -143,7 +146,7 @@ export default function Options() {
           {tab === 'blacklist' && (
               <div style={s.body}>
                 {bannedIds.length === 0
-                    ? <p style={s.empty}>追放されたユーザーはいません</p>
+                    ? <p style={s.empty}>{t('blacklist_empty')}</p>
                     : <ul style={s.list}>
                       {bannedIds.map(id => (
                           <li key={id} style={s.item}>
@@ -152,7 +155,7 @@ export default function Options() {
                                 style={{ ...s.delBtn, background: '#F0FDF4', color: '#16A34A' }}
                                 onClick={() => handleRemoveBan(id)}
                             >
-                              解除
+                              {t('remove_button')}
                             </button>
                           </li>
                       ))}

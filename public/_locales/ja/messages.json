@@ -1,0 +1,42 @@
+{
+  "ext_name":        { "message": "塞耳 Saiji" },
+  "ext_description": { "message": "YouTube・Twitch のライブチャットから不快なコメントをフィルタリングします" },
+
+  "loading":         { "message": "読み込み中..." },
+  "badge_on":        { "message": "ON" },
+  "badge_off":       { "message": "OFF" },
+
+  "stat_hidden_label": { "message": "非表示" },
+  "stat_hidden_unit":  { "message": "件" },
+  "stat_banned_label": { "message": "追放" },
+  "stat_banned_unit":  { "message": "人" },
+
+  "filter_turn_off":       { "message": "フィルタを OFF にする" },
+  "filter_turn_on":        { "message": "フィルタを ON にする" },
+  "comment_lock_turn_off": { "message": "コメントロック OFF にする" },
+  "comment_lock_turn_on":  { "message": "コメントロック ON にする" },
+  "open_settings":         { "message": "設定・NGワード管理" },
+
+  "options_title": { "message": "塞耳 Saiji — 設定" },
+  "tab_ngwords": {
+    "message": "NGワード ($COUNT$)",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "tab_blacklist": {
+    "message": "追放リスト ($COUNT$)",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+
+  "platform_toggle_title":  { "message": "対象プラットフォームを切り替え" },
+  "ng_input_placeholder":   { "message": "NGワードを入力（Enter で追加）" },
+  "add_button":             { "message": "追加" },
+  "platform_hint_both":     { "message": "両方のプラットフォームに適用されます" },
+  "platform_hint_youtube":  { "message": "YouTube のみに適用されます" },
+  "platform_hint_twitch":   { "message": "Twitch のみに適用されます" },
+  "error_empty_word":       { "message": "ワードを入力してください" },
+  "error_duplicate_word":   { "message": "同じワード・同じ対象がすでに登録されています（表記違いを含む）" },
+  "ng_empty":               { "message": "NGワードが登録されていません" },
+  "blacklist_empty":        { "message": "追放されたユーザーはいません" },
+  "remove_button":          { "message": "解除" },
+  "delete_button":          { "message": "削除" }
+}

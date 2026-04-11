@@ -1,0 +1,42 @@
+{
+  "ext_name":        { "message": "Saiji" },
+  "ext_description": { "message": "YouTube 및 Twitch 라이브 채팅에서 불쾌한 댓글을 필터링합니다" },
+
+  "loading":         { "message": "로딩 중..." },
+  "badge_on":        { "message": "ON" },
+  "badge_off":       { "message": "OFF" },
+
+  "stat_hidden_label": { "message": "숨김" },
+  "stat_hidden_unit":  { "message": "개" },
+  "stat_banned_label": { "message": "추방" },
+  "stat_banned_unit":  { "message": "명" },
+
+  "filter_turn_off":       { "message": "필터 끄기" },
+  "filter_turn_on":        { "message": "필터 켜기" },
+  "comment_lock_turn_off": { "message": "댓글 잠금 해제" },
+  "comment_lock_turn_on":  { "message": "댓글 잠금" },
+  "open_settings":         { "message": "설정・NG 단어 관리" },
+
+  "options_title": { "message": "Saiji — 설정" },
+  "tab_ngwords": {
+    "message": "NG 단어 ($COUNT$)",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "tab_blacklist": {
+    "message": "추방 목록 ($COUNT$)",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+
+  "platform_toggle_title":  { "message": "대상 플랫폼 전환" },
+  "ng_input_placeholder":   { "message": "NG 단어 입력 (Enter로 추가)" },
+  "add_button":             { "message": "추가" },
+  "platform_hint_both":     { "message": "모든 플랫폼에 적용됩니다" },
+  "platform_hint_youtube":  { "message": "YouTube에만 적용됩니다" },
+  "platform_hint_twitch":   { "message": "Twitch에만 적용됩니다" },
+  "error_empty_word":       { "message": "단어를 입력하세요" },
+  "error_duplicate_word":   { "message": "같은 단어・같은 대상이 이미 등록되어 있습니다 (표기 차이 포함)" },
+  "ng_empty":               { "message": "등록된 NG 단어가 없습니다" },
+  "blacklist_empty":        { "message": "추방된 사용자가 없습니다" },
+  "remove_button":          { "message": "해제" },
+  "delete_button":          { "message": "삭제" }
+}
