@@ -1,5 +1,6 @@
 // ── NgWord ───────────────────────────────────────────────
-export type NgWordPlatform = 'both' | 'youtube' | 'twitch';
+import type { ToxicSettings } from './toxic';
+export type NgWordPlatform = 'both' | 'youtube_live' | 'youtube_normal' | 'twitch';
 
 export interface NgWord {
   word:     string;
@@ -20,12 +21,16 @@ export interface StorageSchema {
   sessionFiltered: number;
   /** コメント送信ロック ON/OFF（寝落ち誤送信防止） */
   commentLockEnabled: boolean;
+  toxicSettings: ToxicSettings;
 }
 
 export type StorageKey = keyof StorageSchema;
 
 // ── Messages ──────────────────────────────────────────────
 export type Message =
+    | { type: 'JUDGE_TOXIC'; text: string }
+    | { type: 'TOXIC_HEALTH' }
+    | { type: 'SYNC_TOXIC_SETTINGS'; settings: ToxicSettings }
     | { type: 'REMOUNT_OBSERVER' }
     | { type: 'ADD_TO_BLACKLIST'; authorId: string }
     | { type: 'SYNC_BLACKLIST';   bannedIds: string[] }
@@ -63,7 +68,8 @@ export interface FilterState {
   bannedUsers:      Set<string>;
   violationCounter: Map<string, number>;
   filterEnabled:    boolean;
+  toxicSettings: ToxicSettings;
 }
 
 // ── WatchMode ─────────────────────────────────────────────
-export type WatchMode = 'live' | 'archive';
+export type WatchMode = 'live' | 'archive' | 'normal';

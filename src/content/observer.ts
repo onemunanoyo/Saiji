@@ -1,7 +1,8 @@
 import type { Platform, WatchMode } from '../shared/types';
-import { getChatContainer } from '../shared/selectors';
+import { getChatContainer, getNormalCommentContainer } from '../shared/selectors';
 import type { FilterState } from '../shared/types';
-import { processElement } from './filter';
+import { processElement as filterElement } from './filter';
+import { checkToxic, invalidateToxic } from './toxic';
 
 const RETRY_INTERVAL_MS = 1000;
 const RETRY_MAX         = 20;
@@ -13,6 +14,23 @@ const PROCESS_DELAY: Record<Platform, number> = {
 };
 
 let observer: MutationObserver | null = null;
+let mountGeneration = 0;
+const removed = new WeakMap<Element, string>();
+
+function processElement(el: Element, platform: Platform, state: FilterState, onBan: (id: string) => void) {
+  const target = el.tagName.toLowerCase() === 'ytd-comment-thread-renderer'
+      ? el.querySelector('ytd-comment-renderer') ?? el : el;
+  const snapshot = target.textContent ?? '';
+  if (removed.get(target) === snapshot) return { removed: false };
+  const result = filterElement(target, platform, state, onBan);
+  if (result.removed) removed.set(target, snapshot);
+  return result;
+}
+
+function scheduleProcess(callback: () => void, delay: number): void {
+  const current = mountGeneration;
+  setTimeout(() => { if (current === mountGeneration) callback(); }, delay);
+}
 let retryTimer: ReturnType<typeof setTimeout> | null = null;
 
 export function mountObserver(
@@ -27,6 +45,8 @@ export function mountObserver(
 }
 
 export function dismountObserver(): void {
+  mountGeneration++;
+  invalidateToxic();
   if (retryTimer !== null) {
     clearTimeout(retryTimer);
     retryTimer = null;
@@ -45,11 +65,12 @@ function attemptMount(
     onBan: (authorId: string) => void,
     attempt: number,
 ): void {
-  const container = getChatContainer(platform);
+  if (!state.filterEnabled) return;
+  const container = mode === 'normal' ? getNormalCommentContainer() : getChatContainer(platform);
 
   if (!container) {
     if (attempt >= RETRY_MAX) {
-      console.warn(`[Saiji] チャット欄が見つかりませんでした (${platform})`);
+      console.warn(`[Saiji] コメント欄/チャット欄が見つかりませんでした (${platform} / ${mode})`);
       return;
     }
     retryTimer = setTimeout(
@@ -59,7 +80,9 @@ function attemptMount(
     return;
   }
 
-  if (mode === 'archive') {
+  if (mode === 'normal') {
+    mountNormalObserver(platform, container, state, onFiltered, onBan);
+  } else if (mode === 'archive') {
     mountArchiveObserver(platform, container, state, onFiltered, onBan);
   } else {
     mountLiveObserver(platform, container, state, onFiltered, onBan);
@@ -83,18 +106,16 @@ function mountLiveObserver(
       for (const node of mutation.addedNodes) {
         if (!(node instanceof Element)) continue;
         if (delay > 0) {
-          // 追加直後に非表示にして遅延後に判定
-          (node as HTMLElement).style.visibility = 'hidden';
-          setTimeout(() => {
+          // 描画完了後に判定（AI は非同期）
+          scheduleProcess(() => {
             const result = processElement(node, platform, state, onBan);
-            if (!result.removed) {
-              (node as HTMLElement).style.visibility = 'visible';
-            }
             if (result.removed) onFiltered();
+            else checkToxic(node, platform, state, onFiltered);
           }, delay);
         } else {
           const result = processElement(node, platform, state, onBan);
           if (result.removed) onFiltered();
+          else checkToxic(node, platform, state, onFiltered);
         }
       }
     }
@@ -117,11 +138,12 @@ function mountArchiveObserver(
       if (!(node instanceof Element)) continue;
       const result = processElement(node, platform, state, onBan);
       if (result.removed) onFiltered();
+      else checkToxic(node, platform, state, onFiltered);
     }
   }
 
   // ページ読み込み直後は描画が終わっていないので少し待つ
-  setTimeout(scanAll, 500);
+  scheduleProcess(scanAll, 500);
 
   // ② スクロールで追加読み込みされるコメントも監視
   observer = new MutationObserver(mutations => {
@@ -129,13 +151,79 @@ function mountArchiveObserver(
       for (const node of mutation.addedNodes) {
         if (!(node instanceof Element)) continue;
         // アーカイブも描画待ちが必要
-        setTimeout(() => {
+        scheduleProcess(() => {
           const result = processElement(node, platform, state, onBan);
           if (result.removed) onFiltered();
+          else checkToxic(node, platform, state, onFiltered);
         }, 100);
       }
     }
   });
 
   observer.observe(container, { childList: true, subtree: false });
+}
+
+/** 通常動画用：既存コメントのフィルタリング＋追加コメントの監視 */
+function mountNormalObserver(
+    platform: Platform,
+    container: Element,
+    state: FilterState,
+    onFiltered: () => void,
+    onBan: (authorId: string) => void,
+): void {
+  // ① 既存コメントをフィルタリング
+  function scanExisting(): void {
+    const threads = container.querySelectorAll('ytd-comment-thread-renderer');
+    threads.forEach(thread => {
+      const res = processElement(thread, platform, state, onBan);
+      if (res.removed) onFiltered();
+      else checkToxic(thread, platform, state, onFiltered);
+    });
+
+    const comments = container.querySelectorAll('ytd-comment-renderer');
+    comments.forEach(comment => {
+      const res = processElement(comment, platform, state, onBan);
+      if (res.removed) onFiltered();
+      else checkToxic(comment, platform, state, onFiltered);
+    });
+  }
+
+  scheduleProcess(scanExisting, 500);
+
+  // ② 新規追加されるコメントを監視
+  observer = new MutationObserver(mutations => {
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
+        if (!(node instanceof Element)) continue;
+        
+        const tagName = node.tagName.toLowerCase();
+        if (tagName === 'ytd-comment-thread-renderer' || tagName === 'ytd-comment-renderer') {
+          scheduleProcess(() => {
+            const result = processElement(node, platform, state, onBan);
+            if (result.removed) onFiltered();
+            else checkToxic(node, platform, state, onFiltered);
+          }, 100);
+        } else {
+          const nestedThreads = node.querySelectorAll('ytd-comment-thread-renderer');
+          nestedThreads.forEach(thread => {
+            scheduleProcess(() => {
+              const result = processElement(thread, platform, state, onBan);
+              if (result.removed) onFiltered();
+              else checkToxic(thread, platform, state, onFiltered);
+            }, 100);
+          });
+          const nestedComments = node.querySelectorAll('ytd-comment-renderer');
+          nestedComments.forEach(comment => {
+            scheduleProcess(() => {
+              const result = processElement(comment, platform, state, onBan);
+              if (result.removed) onFiltered();
+              else checkToxic(comment, platform, state, onFiltered);
+            }, 100);
+          });
+        }
+      }
+    }
+  });
+
+  observer.observe(container, { childList: true, subtree: true });
 }

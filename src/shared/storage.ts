@@ -1,4 +1,5 @@
 import type { StorageSchema, StorageKey, NgWord } from './types';
+import { cleanToxicSettings, DEFAULT_TOXIC_SETTINGS } from './toxic';
 
 export const DEFAULT_STORAGE: StorageSchema = {
   ngWords:            [],
@@ -7,11 +8,27 @@ export const DEFAULT_STORAGE: StorageSchema = {
   blUpdatedAt:        Date.now(),
   sessionFiltered:    0,
   commentLockEnabled: false,
+  toxicSettings: structuredClone(DEFAULT_TOXIC_SETTINGS),
 };
+
+function cleanNgWords(words: any[]): NgWord[] {
+  if (!Array.isArray(words)) return [];
+  return words.map(w => {
+    if (w && (w.platform === 'youtube' as any)) {
+      return { ...w, platform: 'youtube_live' };
+    }
+    return w as NgWord;
+  });
+}
 
 export async function getStorage<K extends StorageKey>(key: K): Promise<StorageSchema[K]> {
   const result = await chrome.storage.local.get(key);
-  return (result[key] ?? DEFAULT_STORAGE[key]) as StorageSchema[K];
+  let val = result[key] ?? DEFAULT_STORAGE[key];
+  if (key === 'ngWords') {
+    val = cleanNgWords(val);
+  }
+  if (key === 'toxicSettings') val = cleanToxicSettings(val);
+  return val as StorageSchema[K];
 }
 
 export async function setStorage<K extends StorageKey>(key: K, value: StorageSchema[K]): Promise<void> {
@@ -20,7 +37,10 @@ export async function setStorage<K extends StorageKey>(key: K, value: StorageSch
 
 export async function getStorageAll(): Promise<StorageSchema> {
   const result = await chrome.storage.local.get(null);
-  return { ...DEFAULT_STORAGE, ...result } as StorageSchema;
+  const merged = { ...DEFAULT_STORAGE, ...result } as StorageSchema;
+  merged.ngWords = cleanNgWords(merged.ngWords);
+  merged.toxicSettings = cleanToxicSettings(merged.toxicSettings);
+  return merged;
 }
 
 export async function addBannedId(authorId: string): Promise<void> {
