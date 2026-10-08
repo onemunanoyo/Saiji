@@ -2,6 +2,10 @@ import { chromium } from 'playwright';
 import { writeFile } from 'node:fs/promises';
 const browser = await chromium.connectOverCDP('http://127.0.0.1:9227');
 const context = browser.contexts()[0];
+  await context.route('https://www.youtube.com/**', route => route.fulfill({ contentType: 'text/html', body: '<html><body>Saiji isolated test</body></html>' }));
+  const targetPage = await context.newPage();
+  await targetPage.goto('https://www.youtube.com/watch?v=saiji-isolated-test');
+
 try {
   const worker = context.serviceWorkers().find(worker => worker.url().endsWith('/background/index.js'));
   const existingPage = context.pages().find(page => page.url().endsWith('/options.html'));

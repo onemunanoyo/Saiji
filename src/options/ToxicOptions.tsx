@@ -38,11 +38,11 @@ export default function ToxicOptions() {
 
   async function health() {
     setBusy(true);
-    setStatus('準備中です。未配置のモデルはHFから取得します（初回約650MB）。');
+    setStatus('準備中です。YouTube/TwitchのタブとAIフィルタが有効な場合に起動します。');
     try {
 
       const response = await chrome.runtime.sendMessage({ type: 'TOXIC_HEALTH' } satisfies Message);
-      setStatus(response?.ok ? `準備完了（${response.backend}）` : `準備できません：${response?.error ?? '不明なエラー'}`);
+      setStatus(response?.ok ? `準備完了（${response.backend}）` : response?.error === 'idle' ? '停止中：AIフィルタを有効にし、YouTube/Twitchのタブを開いてください。' : `準備できません：${response?.error ?? '不明なエラー'}`);
     } catch { setStatus(t('ai_unavailable')); }
     finally { setBusy(false); }
   }
@@ -69,6 +69,7 @@ export default function ToxicOptions() {
       モデルがない場合はHugging Faceから取得する
     </label>
     <p style={{ fontSize: 12 }}>初回約650MB。取得後はブラウザ内に保存し、次回はキャッシュを使います。コメントは送信しません。変更後に保存してください。</p>
+    <p style={{ fontSize: 12 }}>YouTube/Twitchでの判定時だけ起動します。対象タブをすべて閉じるか、AIまたは全体フィルタを無効にするとモデルを解放します。保存済みモデルは残ります。</p>
     <p>Saiji-Toxic-v2 / ブラウザ内推論・最大128トークン</p>
     <label>処理方式 <select value={settings.backend ?? 'auto'} onChange={e => setSettings({ ...settings, backend: e.target.value as 'auto' | 'webgpu' | 'wasm' })}>
       <option value="auto">自動（GPU優先）</option><option value="webgpu">WebGPU（GPU）</option><option value="wasm">WASM（CPU）</option>

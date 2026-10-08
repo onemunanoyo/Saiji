@@ -21,6 +21,12 @@ function resetWorker(next: string) {
 
 chrome.runtime.onMessage.addListener((message, sender, respond) => {
   if (message?.target !== 'saiji-inference' || sender.id !== chrome.runtime.id) return false;
+  if (message.action === 'dispose') {
+    worker?.terminate(); worker = null;
+    for (const item of pending.values()) { clearTimeout(item.timer); item.resolve({ ok: false, error: 'released' }); }
+    pending.clear();
+    respond({ ok: true }); return false;
+  }
   if (pending.size >= 32) { respond({ ok: false, error: 'busy' }); return false; }
   if (!worker || preference !== message.preference) resetWorker(message.preference);
   const id = ++sequence;
