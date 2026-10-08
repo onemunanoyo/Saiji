@@ -8,6 +8,7 @@ async function load(path) {
 }
 const policy = await load('src/shared/toxic.ts');
 const content = await load('src/content/toxic.ts');
+const ruleFilter = await load('src/content/filter.ts');
 const background = await load('src/background/toxic.ts');
 const zero = () => Object.fromEntries(policy.TOXIC_LABELS.map(label => [label, 0]));
 
@@ -181,4 +182,42 @@ test('disabled AI releases model even with a target tab still open', async () =>
   chrome.offscreen.closeDocument=async()=>{closed++;};
   await background.reconcileToxicLifecycle();
   assert.equal(closed,1);
+});
+
+test('rule-hidden comments never reach inference, including repeated DOM processing', async () => {
+  content.invalidateToxic();
+  globalThis.document={querySelector:()=>null};globalThis.location={hostname:'youtube.com'};
+  globalThis.chrome={runtime:{sendMessage:()=>assert.fail('rule-hidden text sent to classifier')}};
+  const s=state();s.ngWords=[{word:'blocked',platform:'both'}];
+  const node=element('blocked comment');
+  assert.equal(ruleFilter.processElement(node,'youtube',s,()=>{}).removed,true);
+  content.checkToxic(node,'youtube',s,()=>assert.fail('AI counted a rule removal'));
+  content.checkToxic(node,'youtube',s,()=>assert.fail('AI counted a repeated rule removal'));
+  await tick();assert.equal(node.style.getPropertyValue('display'),'none');
+});
+test('comments hidden by a parent thread never reach inference', async () => {
+  content.invalidateToxic();
+  globalThis.chrome={runtime:{sendMessage:()=>assert.fail('hidden child sent to classifier')}};
+  const parent=element();parent.style.setProperty('display','none','important');
+  const child=element('child comment');child.parentElement=parent;
+  content.checkToxic(child,'youtube',state(),()=>assert.fail('hidden child counted'));
+  await tick();
+});
+test('visible comments surviving rules still reach inference', async () => {
+  content.invalidateToxic();
+  globalThis.document={querySelector:()=>null};globalThis.location={hostname:'youtube.com'};
+  let calls=0;globalThis.chrome={runtime:{sendMessage:async()=>{calls++;return {ok:true,scores:zero()};}}};
+  const s=state();s.ngWords=[{word:'blocked',platform:'both'}];const node=element('ordinary comment');
+  assert.equal(ruleFilter.processElement(node,'youtube',s,()=>{}).removed,false);
+  content.checkToxic(node,'youtube',s,()=>assert.fail('safe comment hidden'));await tick();
+  assert.equal(calls,1);assert.equal(node.style.getPropertyValue('display'),'');
+});
+test('a parent hidden while inference is pending prevents an AI hide or count', async () => {
+  content.invalidateToxic();let resolve;
+  globalThis.chrome={runtime:{sendMessage:()=>new Promise(r=>{resolve=r;})}};
+  const parent=element();const child=element();child.parentElement=parent;let counted=0;
+  content.checkToxic(child,'youtube',state(),()=>counted++);
+  parent.style.setProperty('display','none','important');
+  resolve({ok:true,scores:{...zero(),threat:1}});await tick();
+  assert.equal(counted,0);assert.equal(child.dataset.saijiToxic,undefined);
 });

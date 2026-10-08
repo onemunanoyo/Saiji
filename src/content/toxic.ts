@@ -20,6 +20,14 @@ export function invalidateToxic(): void {
   hidden.clear();
 }
 
+// Include hidden parent threads: their child comments can still have display="".
+function isHidden(node: HTMLElement): boolean {
+  for (let current: HTMLElement | null = node; current; current = current.parentElement) {
+    if (current.hidden || current.style.getPropertyValue('display') === 'none') return true;
+  }
+  return false;
+}
+
 export function checkToxic(el: Element, platform: Platform, state: FilterState, onFiltered: () => void): void {
   if (!state.filterEnabled || !state.toxicSettings.enabled) return;
   // 通常コメントの親スレッドと子コメントを二重判定しない。
@@ -35,7 +43,7 @@ export function checkToxic(el: Element, platform: Platform, state: FilterState, 
     delete node.dataset.saijiToxic;
     hidden.delete(node);
   }
-  if (node.style.getPropertyValue('display') === 'none') return;
+  if (isHidden(node)) return;
   if (!text || text.length > 2000 || seen.get(target) === snapshot) return;
   seen.set(target, snapshot);
   const current = generation;
@@ -49,7 +57,7 @@ export function checkToxic(el: Element, platform: Platform, state: FilterState, 
         if (!scores) return;
         const labels = matchingLabels(scores, state.toxicSettings);
         if (!labels.length) return;
-        if (node.style.getPropertyValue('display') === 'none') return;
+        if (isHidden(node)) return;
         for (const old of hidden.keys()) if (!old.isConnected) hidden.delete(old);
         hidden.set(node, { value: node.style.getPropertyValue('display'), priority: node.style.getPropertyPriority('display') });
         node.dataset.saijiToxic = labels.join(',');
