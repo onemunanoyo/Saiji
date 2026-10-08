@@ -1,4 +1,5 @@
-"""Opt-in CPU smoke with user-supplied private weights; never run in CI."""
+"""Opt-in real-model HTTP smoke; never downloads weights or runs in CI."""
+import argparse
 import importlib.util
 import json
 import threading
@@ -11,7 +12,10 @@ root = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('toxic_server', root / 'local-toxic/server.py')
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
-classifier = module.Classifier(root / 'Toxic.v2')
+parser = argparse.ArgumentParser()
+parser.add_argument('--device', choices=['cpu', 'cuda', 'mps', 'auto'], default='cpu')
+args = parser.parse_args()
+classifier = module.Classifier(root / 'models' / 'Saiji-Toxic-v2', args.device)
 server = ThreadingHTTPServer(('127.0.0.1', 0), module.make_handler(classifier))
 thread = threading.Thread(target=server.serve_forever, daemon=True)
 thread.start()
@@ -33,5 +37,5 @@ finally:
     server.server_close()
     thread.join()
 (root / 'logs').mkdir(exist_ok=True)
-(root / 'logs/toxic-smoke.json').write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding='utf-8')
+(root / f'logs/toxic-smoke-{classifier.device}.json').write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding='utf-8')
 print(json.dumps(results, ensure_ascii=True, indent=2))

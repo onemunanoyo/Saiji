@@ -12,19 +12,21 @@ function normalize(str: string): string {
       .toLowerCase();
 }
 
-// プラットフォームトグル: both → youtube → twitch → both
-const PLATFORM_CYCLE: NgWordPlatform[] = ['both', 'youtube', 'twitch'];
+// プラットフォームトグル: both → youtube_live → twitch → youtube_normal
+const PLATFORM_CYCLE: NgWordPlatform[] = ['both', 'youtube_live', 'twitch', 'youtube_normal'];
 
 const PLATFORM_LABEL: Record<NgWordPlatform, string> = {
-  both:    'Y  T',
-  youtube: 'Y',
-  twitch:  'T',
+  both:           '共通',
+  youtube_live:   'Y生',
+  twitch:         'T',
+  youtube_normal: '通常',
 };
 
 const PLATFORM_STYLE: Record<NgWordPlatform, React.CSSProperties> = {
-  both:    { background: '#E5E7EB', color: '#374151' },
-  youtube: { background: '#DC2626', color: '#fff' },
-  twitch:  { background: '#7C3AED', color: '#fff' },
+  both:           { background: '#E5E7EB', color: '#374151' },
+  youtube_live:   { background: '#DC2626', color: '#fff' },
+  twitch:         { background: '#7C3AED', color: '#fff' },
+  youtube_normal: { background: '#0284C7', color: '#fff' },
 };
 
 export default function Options() {
@@ -120,9 +122,10 @@ export default function Options() {
 
                 {/* トグルの説明 */}
                 <p style={s.hint}>
-                  {platform === 'both'    && t('platform_hint_both')}
-                  {platform === 'youtube' && t('platform_hint_youtube')}
-                  {platform === 'twitch'  && t('platform_hint_twitch')}
+                  {platform === 'both'           && t('platform_hint_both')}
+                  {platform === 'youtube_live'   && t('platform_hint_youtube_live')}
+                  {platform === 'twitch'         && t('platform_hint_twitch')}
+                  {platform === 'youtube_normal' && t('platform_hint_youtube_normal')}
                 </p>
 
                 {error && <p style={s.error}>{error}</p>}

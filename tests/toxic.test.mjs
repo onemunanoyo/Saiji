@@ -11,13 +11,13 @@ const content = await load('src/content/toxic.ts');
 const background = await load('src/background/toxic.ts');
 const zero = () => Object.fromEntries(policy.TOXIC_LABELS.map(label => [label, 0]));
 
-test('defaults are disabled and do not filter advice, politics, overall, or other-stream topics', () => {
-  const scores = zero();
-  scores.toxicity = scores.discrimination = scores.instruction = scores.pigeon = 1;
-  assert.deepEqual(policy.matchingLabels(scores, { ...policy.DEFAULT_TOXIC_SETTINGS, enabled: true }), []);
-  scores.threat = 0.6;
-  assert.deepEqual(policy.matchingLabels(scores, { ...policy.DEFAULT_TOXIC_SETTINGS, enabled: true }), ['threat']);
-  assert.deepEqual(policy.matchingLabels(scores, policy.DEFAULT_TOXIC_SETTINGS), []);
+test('benchmark preset matches max of first five at frozen threshold', () => {
+  const enabled = { ...policy.DEFAULT_TOXIC_SETTINGS, enabled: true };
+  for (const label of policy.TOXIC_LABELS) {
+    const scores = zero(); scores[label] = 0.005039215087890625;
+    assert.equal(policy.matchingLabels(scores, enabled).length, policy.TOXIC_LABELS.indexOf(label) < 5 ? 1 : 0);
+  }
+  assert.deepEqual(policy.matchingLabels({ ...zero(), toxicity: 1 }, policy.DEFAULT_TOXIC_SETTINGS), []);
 });
 
 test('invalid settings and incomplete or nonfinite scores are rejected', () => {

@@ -6,6 +6,12 @@ export const SELECTORS = {
     chatContainer:  '#items',
     authorName:     '#author-name',
     messageText:    '#message',
+    // 通常動画コメント用
+    normalCommentContainer: '#comments #sections #contents',
+    normalCommentThread:    'ytd-comment-thread-renderer',
+    normalComment:          'ytd-comment-renderer',
+    normalAuthorName:       'a#author-text',
+    normalMessageText:      '#content-text',
   },
   twitch: {
     iframeSelector: null as string | null,
@@ -22,14 +28,20 @@ export function detectPlatform(): Platform | null {
   return null;
 }
 
-/** ライブ配信かアーカイブかを判定 */
+/** ライブ配信かアーカイブか通常動画かを判定 */
 export function detectWatchMode(): WatchMode {
   // YouTube: ytd-watch-flexy の is-live 属性で判定
-  const isLive = document.querySelector('ytd-watch-flexy')?.getAttribute('is-live');
-  if (isLive !== null && isLive !== undefined) return 'live';
+  const watchFlexy = document.querySelector('ytd-watch-flexy');
+  if (watchFlexy) {
+    const isLive = watchFlexy.getAttribute('is-live');
+    if (isLive !== null && isLive !== undefined) return 'live';
+    const chatFrame = document.querySelector('iframe#chatframe');
+    if (chatFrame) return 'archive';
+    return 'normal';
+  }
   // Twitch は常にライブ
   if (location.hostname.includes('twitch.tv')) return 'live';
-  return 'archive';
+  return 'normal';
 }
 
 /** チャット欄が属する document を取得（YouTube は iframe 内） */
@@ -48,6 +60,21 @@ export function getChatContainer(platform: Platform): Element | null {
 
 /** コメント要素からユーザー識別子を取得 */
 export function getAuthorId(el: Element, platform: Platform): string | null {
+  if (platform === 'youtube') {
+    const isNormal = el.tagName.toLowerCase() === 'ytd-comment-renderer' || el.tagName.toLowerCase() === 'ytd-comment-thread-renderer' || el.querySelector('a#author-text');
+    if (isNormal) {
+      const authorEl = el.querySelector('a#author-text');
+      if (!authorEl) return null;
+      const href = authorEl.getAttribute('href');
+      if (href) {
+        const parts = href.split('/');
+        const lastPart = parts[parts.length - 1];
+        if (lastPart) return lastPart;
+      }
+      return authorEl.textContent?.trim() ?? null;
+    }
+  }
+
   const sel = SELECTORS[platform].authorName;
   const authorEl = el.querySelector(sel);
   if (!authorEl) return null;
@@ -59,5 +86,16 @@ export function getAuthorId(el: Element, platform: Platform): string | null {
 
 /** コメント要素からテキストを取得 */
 export function getMessageText(el: Element, platform: Platform): string {
+  if (platform === 'youtube') {
+    const isNormal = el.tagName.toLowerCase() === 'ytd-comment-renderer' || el.tagName.toLowerCase() === 'ytd-comment-thread-renderer' || el.querySelector('#content-text');
+    if (isNormal) {
+      return el.querySelector('#content-text')?.textContent?.trim() ?? '';
+    }
+  }
   return el.querySelector(SELECTORS[platform].messageText)?.textContent?.trim() ?? '';
+}
+
+/** 通常動画コメント欄コンテナを取得 */
+export function getNormalCommentContainer(): Element | null {
+  return document.querySelector('#comments #sections #contents') ?? document.querySelector('ytd-comments');
 }

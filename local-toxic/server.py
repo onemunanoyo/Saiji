@@ -19,6 +19,12 @@ class Classifier:
         from transformers import AutoModelForSequenceClassification, PreTrainedTokenizerFast
         self.torch = torch
         torch.set_num_threads(4)
+        if device == 'auto':
+            device = 'cuda' if torch.cuda.is_available() else ('mps' if torch.backends.mps.is_available() else 'cpu')
+        if device == 'cuda' and not torch.cuda.is_available():
+            raise RuntimeError('CUDA is unavailable; install CUDA PyTorch or select cpu')
+        if device == 'mps' and not torch.backends.mps.is_available():
+            raise RuntimeError('Apple Silicon MPS is unavailable; select cpu')
         self.device = device
         self.tokenizer = PreTrainedTokenizerFast(
             tokenizer_file=str(Path(model_dir) / 'tokenizer.json'),
@@ -28,6 +34,8 @@ class Classifier:
         self.model = AutoModelForSequenceClassification.from_pretrained(
             model_dir, local_files_only=True, trust_remote_code=False,
         ).to(device).eval()
+        if device == 'cuda':
+            self.model.half()
         self.labels = [self.model.config.id2label[i] for i in range(self.model.config.num_labels)]
         if set(self.labels) != set(LABELS):
             raise ValueError('Model must have the ten Saiji toxicity labels')
@@ -81,7 +89,7 @@ def make_handler(classifier):
             if not self.allowed():
                 self.reply(403, {'error': 'forbidden'})
             elif self.path == '/health':
-                self.reply(200, {'service': 'saiji-toxic', 'ready': True, 'labels': list(LABELS)})
+                self.reply(200, {'service': 'saiji-toxic', 'ready': True, 'labels': list(LABELS), 'device': getattr(classifier, 'device', 'unknown')})
             else:
                 self.reply(404, {'error': 'not_found'})
 
@@ -118,12 +126,12 @@ def make_handler(classifier):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model-dir', type=Path, default=Path(__file__).resolve().parents[1] / 'Toxic.v2')
-    parser.add_argument('--device', choices=('cpu', 'cuda'), default='cpu')
+    parser.add_argument('--model-dir', type=Path, default=Path(__file__).resolve().parents[1] / 'models' / 'Saiji-Toxic-v2')
+    parser.add_argument('--device', choices=('auto', 'cpu', 'cuda', 'mps'), default='auto')
     args = parser.parse_args()
     classifier = Classifier(args.model_dir, args.device)
     server = ThreadingHTTPServer(('127.0.0.1', 8765), make_handler(classifier))
-    print(f'Saiji classifier ready: http://127.0.0.1:8765 ({args.device})', flush=True)
+    print(f'Saiji classifier ready: http://127.0.0.1:8765 ({classifier.device})', flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

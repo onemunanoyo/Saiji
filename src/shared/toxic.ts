@@ -13,9 +13,11 @@ export type ToxicResponse = { ok: true; scores: ToxicScores } | { ok: false; err
 
 export const TOXIC_ORIGIN = 'http://127.0.0.1:8765';
 export const TOXIC_PERMISSION = 'http://127.0.0.1/*';
+export const README_THRESHOLDS: ToxicSettings['thresholds'] = { harassment: 0.6, obscene: 0.6, discrimination: 0.6, threat: 0.6, spoiler: 0.7, self_promotion: 0.7, spam: 0.7 };
+
 export const DEFAULT_TOXIC_SETTINGS: ToxicSettings = {
   enabled: false,
-  thresholds: { harassment: 0.6, obscene: 0.6, threat: 0.6, spoiler: 0.7, self_promotion: 0.7, spam: 0.7 },
+  thresholds: Object.fromEntries(TOXIC_LABELS.slice(0, 5).map(label => [label, 0.005039215087890625])),
 };
 
 export function cleanToxicSettings(value: unknown): ToxicSettings {

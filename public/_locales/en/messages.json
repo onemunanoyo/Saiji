@@ -43,7 +43,7 @@
   "mute_user":              { "message": "Mute user with Saiji" },
 
   "tab_ai": { "message": "AI filter" },
-  "ai_description": { "message": "Run Toxic.v2 on this PC to classify Japanese comments. Start the server with start-toxic.ps1 before enabling. Comments are sent only to this PC (127.0.0.1:8765)." },
+  "ai_description": { "message": "Run Saiji-Toxic-v2 on this PC to classify Japanese comments. Start the server with start-toxic.ps1 before enabling. Comments are sent only to this PC (127.0.0.1:8765)." },
   "ai_caveat": { "message": "AI may misclassify comments. Comments may briefly appear before being hidden. AI results do not count toward automatic bans. Discrimination includes neutral political topics. Overall includes advice and other stream-specific topics." },
   "ai_enable": { "message": "Enable AI filter" },
   "ai_threshold_hint": { "message": "Hide when any checked category reaches its threshold. Higher values are more cautious. Overall, discrimination/politics, advice, and other-stream topics are unchecked by default." },

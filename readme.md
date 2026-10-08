@@ -1,3 +1,7 @@
+# ローカル分類モデルの最新版
+
+HF版Saiji-Toxic-v2のセットアップ・CPU/CUDA/Apple Silicon設定は [CLASSIFIER.md](CLASSIFIER.md) を参照してください。以下の旧Toxic.v2セットアップ説明より最新版の手順を優先してください。
+
 # 塞耳 Saiji（さいじ）
 
 > YouTube・Twitch のライブチャットから、不快なコメントを静かに消す Chrome 拡張機能

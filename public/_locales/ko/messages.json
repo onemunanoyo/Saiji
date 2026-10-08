@@ -43,7 +43,7 @@
   "mute_user":              { "message": "Saiji로 사용자 뮤트" },
 
   "tab_ai": { "message": "AI 필터" },
-  "ai_description": { "message": "이 PC에서 Toxic.v2로 일본어 댓글을 판정합니다. start-toxic.ps1로 서버를 시작한 후 활성화하세요. 댓글은 이 PC(127.0.0.1:8765)에만 전송됩니다." },
+  "ai_description": { "message": "이 PC에서 Saiji-Toxic-v2로 일본어 댓글을 판정합니다. start-toxic.ps1로 서버를 시작한 후 활성화하세요. 댓글은 이 PC(127.0.0.1:8765)에만 전송됩니다." },
   "ai_caveat": { "message": "AI가 잘못 판정할 수 있으며 숨기기 전에 댓글이 잠깐 보일 수 있습니다. AI 판정은 자동 차단 횟수에 포함되지 않습니다. 차별 항목은 중립적인 정치 주제도 포함합니다. 전체 항목은 지시 및 다른 방송 주제도 포함합니다." },
   "ai_enable": { "message": "AI 필터 활성화" },
   "ai_threshold_hint": { "message": "선택한 항목이 임계값 이상이면 숨깁니다. 값이 높을수록 신중하게 판정합니다. 전체, 차별/정치, 지시, 다른 방송 항목은 기본적으로 꺼져 있습니다." },

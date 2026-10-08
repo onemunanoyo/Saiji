@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getStorage, setStorage } from '../shared/storage';
 import { t } from '../shared/i18n';
-import { DEFAULT_TOXIC_SETTINGS, TOXIC_LABELS, TOXIC_PERMISSION } from '../shared/toxic';
+import { DEFAULT_TOXIC_SETTINGS, README_THRESHOLDS, TOXIC_LABELS, TOXIC_PERMISSION } from '../shared/toxic';
 import type { ToxicLabel, ToxicResponse, ToxicSettings } from '../shared/toxic';
 import type { Message } from '../shared/types';
 
@@ -68,12 +68,16 @@ export default function ToxicOptions() {
     <label><input type="checkbox" checked={settings.enabled}
         onChange={e => { setSettings({ ...settings, enabled: e.target.checked }); setStatus(''); }} /> {t('ai_enable')}</label>
     <p style={{ fontSize: 12 }}>{t('ai_threshold_hint')}</p>
+    <p>Saiji-Toxic-v2 / 本文のみ・最大128トークン</p>
+    <button onClick={() => { setSettings({ ...settings, thresholds: structuredClone(DEFAULT_TOXIC_SETTINGS.thresholds) }); setStatus(''); }}>1,000件ベンチの設定</button>
+    <button onClick={() => { setSettings({ ...settings, thresholds: { ...README_THRESHOLDS } }); setStatus(''); }}>理由別の設定</button>
+    <p style={{ fontSize: 12 }}>ベンチ設定は先頭5ラベルの最大値 ≥ 0.005039215で非表示。実験用の閾値で、見逃しが残ります。変更後は保存してください。</p>
     {TOXIC_LABELS.map(label => <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '10px 0' }}>
       <label style={{ flex: 1 }}><input type="checkbox" checked={settings.thresholds[label] !== undefined}
           onChange={e => setThreshold(label, e.target.checked ? DEFAULT_TOXIC_SETTINGS.thresholds[label] ?? 0.7 : undefined)} /> {t(`ai_label_${label}`)}</label>
-      <input aria-label={`${t(`ai_label_${label}`)} ${t('ai_threshold')}`} type="number" min="0.05" max="1" step="0.05"
+      <input aria-label={`${t(`ai_label_${label}`)} ${t('ai_threshold')}`} type="number" min="0.000001" max="1" step="any"
           disabled={settings.thresholds[label] === undefined} value={settings.thresholds[label] ?? 0.7}
-          onChange={e => { const n = Number(e.target.value); if (Number.isFinite(n) && n >= 0.05 && n <= 1) setThreshold(label, n); }} style={{ width: 65 }} />
+          onChange={e => { const n = Number(e.target.value); if (Number.isFinite(n) && n > 0 && n <= 1) setThreshold(label, n); }} style={{ width: 65 }} />
     </div>)}
     <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
       <button disabled={busy} onClick={() => void save()}>{t('ai_save')}</button>
