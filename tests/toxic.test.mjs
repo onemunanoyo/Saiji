@@ -22,7 +22,7 @@ test('benchmark preset matches max of first five at frozen threshold', () => {
 
 test('invalid settings and incomplete or nonfinite scores are rejected', () => {
   assert.deepEqual(policy.cleanToxicSettings({ enabled: true, thresholds: { threat: -1, spam: NaN, pigeon: 2, harassment: 0.9 } }),
-      { enabled: true, backend: 'auto', thresholds: { harassment: 0.9 } });
+      { enabled: true, backend: 'auto', downloadMissingModel: true, thresholds: { harassment: 0.9 } });
   assert.equal(policy.parseScores({ threat: 1 }), null);
   assert.equal(policy.parseScores({ ...zero(), threat: NaN }), null);
   assert.equal(policy.parseScores({ ...zero(), spam: '0.8' }), null);

@@ -38,6 +38,7 @@ export default function ToxicOptions() {
 
   async function health() {
     setBusy(true);
+    setStatus('準備中です。未配置のモデルはHFから取得します（初回約650MB）。');
     try {
 
       const response = await chrome.runtime.sendMessage({ type: 'TOXIC_HEALTH' } satisfies Message);
@@ -62,6 +63,12 @@ export default function ToxicOptions() {
     <label><input type="checkbox" checked={settings.enabled}
         onChange={e => { setSettings({ ...settings, enabled: e.target.checked }); setStatus(''); }} /> {t('ai_enable')}</label>
     <p style={{ fontSize: 12 }}>{t('ai_threshold_hint')}</p>
+    <label style={{ display: 'block', margin: '12px 0' }}><input type="checkbox"
+      checked={settings.downloadMissingModel !== false}
+      onChange={e => setSettings({ ...settings, downloadMissingModel: e.target.checked })} />
+      モデルがない場合はHugging Faceから取得する
+    </label>
+    <p style={{ fontSize: 12 }}>初回約650MB。取得後はブラウザ内に保存し、次回はキャッシュを使います。コメントは送信しません。変更後に保存してください。</p>
     <p>Saiji-Toxic-v2 / ブラウザ内推論・最大128トークン</p>
     <label>処理方式 <select value={settings.backend ?? 'auto'} onChange={e => setSettings({ ...settings, backend: e.target.value as 'auto' | 'webgpu' | 'wasm' })}>
       <option value="auto">自動（GPU優先）</option><option value="webgpu">WebGPU（GPU）</option><option value="wasm">WASM（CPU）</option>

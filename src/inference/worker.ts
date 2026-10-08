@@ -1,6 +1,7 @@
 import * as ort from 'onnxruntime-web/webgpu';
 import { Tokenizer } from '@huggingface/tokenizers';
 import { encodeComment } from './encoding';
+import { loadAsset } from './model-assets';
 import { TOXIC_LABELS } from '../shared/toxic';
 
 let session: ort.InferenceSession | null = null;
@@ -9,18 +10,19 @@ let backend = '';
 let fallbackReason = '';
 let chain: Promise<void> = Promise.resolve();
 
-async function initialize(base: string, preference: string) {
+async function initialize(base: string, preference: string, allowDownload: boolean) {
   if (session) return;
   ort.env.wasm.wasmPaths = base + 'runtime/';
   ort.env.wasm.numThreads = 1;
   ort.env.wasm.proxy = false;
-  const responses = await Promise.all(['tokenizer.json', 'tokenizer_config.json'].map(name => fetch(base + 'model/' + name)));
-  if (responses.some(response => !response.ok)) throw new Error('Model files are missing; run browser model preparation');
-  const [definition, config] = await Promise.all(responses.map(response => response.json()));
+  const [definitionBytes, configBytes] = await Promise.all(['tokenizer.json', 'tokenizer_config.json'].map(name => loadAsset(base, name, allowDownload)));
+  const definition = JSON.parse(new TextDecoder().decode(definitionBytes));
+  const config = JSON.parse(new TextDecoder().decode(configBytes));
+  const model = new Uint8Array(await loadAsset(base, 'model.onnx', allowDownload));
   tokenizer = new Tokenizer(definition, config);
   if (preference !== 'wasm') {
     try {
-      session = await ort.InferenceSession.create(base + 'model/model.onnx', { executionProviders: ['webgpu', 'wasm'], graphOptimizationLevel: 'all' });
+      session = await ort.InferenceSession.create(model, { executionProviders: ['webgpu', 'wasm'], graphOptimizationLevel: 'all' });
       backend = 'webgpu';
     } catch (error) {
       if (preference === 'webgpu') throw error;
@@ -28,7 +30,7 @@ async function initialize(base: string, preference: string) {
     }
   }
   if (!session) {
-    session = await ort.InferenceSession.create(base + 'model/model.onnx', { executionProviders: ['wasm'], graphOptimizationLevel: 'all' });
+    session = await ort.InferenceSession.create(model, { executionProviders: ['wasm'], graphOptimizationLevel: 'all' });
     backend = 'wasm';
   }
 }
@@ -37,7 +39,7 @@ self.onmessage = (event: MessageEvent) => {
   const request = event.data;
   chain = chain.then(async () => {
     try {
-      await initialize(request.base, request.preference);
+      await initialize(request.base, request.preference, request.downloadMissingModel !== false);
       if (request.action === 'health') {
         self.postMessage({ id: request.id, result: { ok: true, backend, fallbackReason } });
         return;

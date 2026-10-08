@@ -9,11 +9,15 @@
     "alarms",
     "webNavigation",
     "tabs",
-    "offscreen"
+    "offscreen",
+    "unlimitedStorage"
   ],
   "host_permissions": [
     "*://*.youtube.com/*",
-    "*://*.twitch.tv/*"
+    "*://*.twitch.tv/*",
+    "https://huggingface.co/*",
+    "https://*.hf.co/*",
+    "https://*.huggingface.co/*"
   ],
   "background": {
     "service_worker": "background/index.js"
@@ -46,6 +50,6 @@
   },
   "minimum_chrome_version": "120",
   "content_security_policy": {
-    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; worker-src 'self'; connect-src 'self'"
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; worker-src 'self'; connect-src 'self' https://huggingface.co https://*.hf.co https://*.huggingface.co"
   }
 }

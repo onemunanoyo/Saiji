@@ -1,6 +1,6 @@
 # Saiji-Toxic-v2 ブラウザ内実行
 
-コメント → 拡張機能のバックグラウンド → offscreen document → Worker → ONNX Runtime Web → 判定、という構成です。WebGPUがGPU推論、WASMがCPU推論を担当します。通常の利用にPythonサーバーやCUDAのインストールは必要ありません。モデル、tokenizer、実行ランタイムはdistに同梱し、コメントを外部へ送信しません。
+コメント → 拡張機能のバックグラウンド → offscreen document → Worker → ONNX Runtime Web → 判定、という構成です。WebGPUがGPU推論、WASMがCPU推論を担当します。通常の利用にPythonサーバーやCUDAのインストールは必要ありません。実行ランタイムはdistに同梱します。モデル未配置の場合は設定でHF取得を有効にしてモデルをダウンロードできます。コメントを外部へ送信しません。
 
 ## この環境で使う
 
@@ -32,12 +32,20 @@ npm test
 npm run build
 ```
 
-setupスクリプトがHFモデルを `models/Saiji-Toxic-v2` に用意し、exportが `models/browser` にONNXとtokenizerを作成します。ビルド時にdistへコピーします。モデルがない環境でもソースのビルドはできますが、AI推論を利用する前にモデル生成が必要です。モデル・環境・収集データはGitに含めません。
+setupスクリプトがHFモデルを `models/Saiji-Toxic-v2` に用意し、exportが `models/browser` にONNXとtokenizerを作成します。ビルド時にdistへコピーします。モデルがない環境でもソースのビルドはできます。AI推論の初回準備時にHFから検証済みONNXを取得するため、利用者によるモデル変換は不要です。モデル・環境・収集データはGitに含めません。
 
 Pythonの起動・停止スクリプトとserver.pyは比較・デバッグ用として残しています。拡張機能はlocalhost判定サーバーへ接続しません。
 
 ## 配布について
 
-現段階はモデル同梱のローカル読み込み用です。FP32のモデルは約641MBあり、Chrome Store向けの最終パッケージ化は未実施です。公開前にモデルの量子化またはモデル資産のダウンロード・キャッシュ方式を検討し、再評価とStore要件の確認を行います。実行コードはローカルに同梱します。
+現段階はローカル読み込み用で、同梱またはHF取得に対応しています。FP32のモデルは約641MBあり、Chrome Store向けの最終パッケージ化は未実施です。公開前にモデルの量子化またはモデル資産のダウンロード・キャッシュ方式を検討し、再評価とStore要件の確認を行います。実行コードはローカルに同梱します。
 
 実ブラウザの計測記録は `logs/browser-smoke.json` と `logs/browser-benchmark-receipt.json` に保存しています。後者の再実行には `node tools/browser-benchmark.mjs <benchmark.jsonl>` を使います（隔離ブラウザのCDPポート9227が必要）。
+
+## HF取得とキャッシュ
+
+「モデルがない場合はHugging Faceから取得する」は初期設定で有効です。モデル準備時は同梱ファイル、ブラウザキャッシュ、HFの順に探します。無効でも同梱・キャッシュ済みモデルは使えます。HFへの通信はモデル資産の取得のみで、コメント本文は送信しません。
+
+HFのbrowser/に追加した検証済みFP32 ONNXをrevision `3530d6bb0492c4038f61092c7c2db0598747b424` に固定し、全ファイルをSHA-256で検査してから保存・使用します。初回約650MBの通信と保存領域が必要です。実行コードやWASMを外部から取得することはありません。キャッシュは拡張機能の削除やブラウザのストレージ消去で失われる場合があります。非公開リポジトリの認証には対応しません（指定モデルは公開）。
+
+モデル未同梱の実ブラウザ検証ではHF取得後のWASM判定と、workerを再初期化してネットワークを切った後のキャッシュによるWebGPU判定が成功しました。記録は `logs/hf-download-smoke.json`。再実行はモデル未同梱の隔離ブラウザで `node tools/browser-hf-smoke.mjs <extension-id>` を使用します。

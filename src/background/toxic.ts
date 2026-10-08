@@ -16,7 +16,7 @@ async function ensureDocument(): Promise<void> {
 async function request(action: string, text?: string) {
   await ensureDocument();
   const settings = await getStorage('toxicSettings');
-  return chrome.runtime.sendMessage({ type: 'BROWSER_INFERENCE', target: 'saiji-inference', action, text, preference: settings.backend ?? 'auto' });
+  return chrome.runtime.sendMessage({ type: 'BROWSER_INFERENCE', target: 'saiji-inference', action, text, preference: settings.backend ?? 'auto', downloadMissingModel: settings.downloadMissingModel !== false });
 }
 export async function judgeToxic(text: string): Promise<ToxicResponse> {
   if (typeof text !== 'string' || !text.trim() || text.length > 2000) return { ok: false, error: 'invalid_text' };

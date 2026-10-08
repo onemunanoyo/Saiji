@@ -28,7 +28,7 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
     // A hung inference must not leave an unbounded worker queue behind.
     for (const item of pending.values()) { clearTimeout(item.timer); item.resolve({ ok: false, error: 'inference_timeout' }); }
     pending.clear(); worker?.terminate(); worker = null;
-  }, 120_000);
+  }, 15 * 60_000);
   pending.set(id, { resolve: respond, timer });
   worker!.postMessage({ ...message, id, base: chrome.runtime.getURL('') });
   return true;

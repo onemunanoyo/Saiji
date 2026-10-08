@@ -7,6 +7,7 @@ export type ToxicLabel = typeof TOXIC_LABELS[number];
 export type ToxicScores = Record<ToxicLabel, number>;
 export interface ToxicSettings {
   enabled: boolean;
+  downloadMissingModel?: boolean;
   backend?: 'auto' | 'webgpu' | 'wasm';
   thresholds: Partial<Record<ToxicLabel, number>>;
 }
@@ -16,6 +17,7 @@ export const README_THRESHOLDS: ToxicSettings['thresholds'] = { harassment: 0.6,
 
 export const DEFAULT_TOXIC_SETTINGS: ToxicSettings = {
   enabled: false,
+  downloadMissingModel: true,
   thresholds: Object.fromEntries(TOXIC_LABELS.slice(0, 5).map(label => [label, 0.005039215087890625])),
 };
 
@@ -32,7 +34,7 @@ export function cleanToxicSettings(value: unknown): ToxicSettings {
     }
   }
   const backend = raw.backend === 'webgpu' || raw.backend === 'wasm' ? raw.backend : 'auto';
-  return { enabled: raw.enabled === true, thresholds, backend };
+  return { enabled: raw.enabled === true, thresholds, backend, downloadMissingModel: raw.downloadMissingModel !== false };
 }
 
 export function parseScores(value: unknown): ToxicScores | null {
