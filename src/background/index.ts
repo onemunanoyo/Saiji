@@ -1,4 +1,6 @@
 import type { Message, NgWord, StatsResponse } from '../shared/types';
+import { judgeToxic, toxicHealth } from './toxic';
+import { cleanToxicSettings } from '../shared/toxic';
 import {
   ALARM_RESET_COUNTER,
   ALARM_CLEAR_BLACKLIST,
@@ -67,7 +69,8 @@ chrome.webNavigation.onHistoryStateUpdated.addListener(details => {
 // ── メッセージ受信 ────────────────────────────────────────
 chrome.runtime.onMessage.addListener(
     (msg: Message, _sender, sendResponse) => {
-      handleMessage(msg, sendResponse);
+      if ((msg as { type: string }).type === 'BROWSER_INFERENCE') return false;
+      void handleMessage(msg, sendResponse).catch(() => sendResponse({ ok: false, error: 'unavailable' }));
       return true; // 非同期 sendResponse のため
     }
 );
@@ -77,6 +80,13 @@ async function handleMessage(
     sendResponse: (r?: unknown) => void,
 ): Promise<void> {
   switch (msg.type) {
+
+    case 'JUDGE_TOXIC':
+      sendResponse(await judgeToxic(msg.text));
+      break;
+    case 'TOXIC_HEALTH':
+      sendResponse(await toxicHealth());
+      break;
 
     case 'ADD_TO_BLACKLIST': {
       await addBannedId(msg.authorId);
@@ -118,6 +128,9 @@ async function handleMessage(
 // ── storage 変更監視（NGワード変更を CS に伝播）────────────
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'local') return;
+  if (changes['toxicSettings']) {
+    broadcastToAllTabs({ type: 'SYNC_TOXIC_SETTINGS', settings: cleanToxicSettings(changes['toxicSettings'].newValue) });
+  }
   if (changes['ngWords']) {
     broadcastToAllTabs({
       type: 'SYNC_NG_WORDS',

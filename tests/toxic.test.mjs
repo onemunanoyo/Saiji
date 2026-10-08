@@ -1,0 +1,148 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { build } from 'esbuild';
+
+async function load(path) {
+  const result = await build({ entryPoints: [path], bundle: true, write: false, platform: 'node', format: 'esm' });
+  return import(`data:text/javascript;base64,${Buffer.from(result.outputFiles[0].text).toString('base64')}`);
+}
+const policy = await load('src/shared/toxic.ts');
+const content = await load('src/content/toxic.ts');
+const background = await load('src/background/toxic.ts');
+const zero = () => Object.fromEntries(policy.TOXIC_LABELS.map(label => [label, 0]));
+
+test('benchmark preset matches max of first five at frozen threshold', () => {
+  const enabled = { ...policy.DEFAULT_TOXIC_SETTINGS, enabled: true };
+  for (const label of policy.TOXIC_LABELS) {
+    const scores = zero(); scores[label] = 0.005039215087890625;
+    assert.equal(policy.matchingLabels(scores, enabled).length, policy.TOXIC_LABELS.indexOf(label) < 5 ? 1 : 0);
+  }
+  assert.deepEqual(policy.matchingLabels({ ...zero(), toxicity: 1 }, policy.DEFAULT_TOXIC_SETTINGS), []);
+});
+
+test('invalid settings and incomplete or nonfinite scores are rejected', () => {
+  assert.deepEqual(policy.cleanToxicSettings({ enabled: true, thresholds: { threat: -1, spam: NaN, pigeon: 2, harassment: 0.9 } }),
+      { enabled: true, backend: 'auto', downloadMissingModel: true, thresholds: { harassment: 0.9 } });
+  assert.equal(policy.parseScores({ threat: 1 }), null);
+  assert.equal(policy.parseScores({ ...zero(), threat: NaN }), null);
+  assert.equal(policy.parseScores({ ...zero(), spam: '0.8' }), null);
+});
+
+function element(text = 'hello') {
+  const styleValues = new Map();
+  return {
+    tagName: 'DIV', isConnected: true, text, dataset: {},
+    querySelector(selector) { return selector === '#message' ? { textContent: this.text } : null; },
+    style: {
+      getPropertyValue: key => styleValues.get(key)?.value ?? '',
+      getPropertyPriority: key => styleValues.get(key)?.priority ?? '',
+      setProperty: (key, value, priority = '') => styleValues.set(key, { value, priority }),
+    },
+  };
+}
+const state = () => ({ filterEnabled: true, toxicSettings: { enabled: true, thresholds: { threat: 0.6 } },
+  bannedUsers: new Set(), violationCounter: new Map(), ngWords: [] });
+const tick = () => new Promise(resolve => setImmediate(resolve));
+
+test('AI hides once, restores on disable, and adds no violation or ban', async () => {
+  content.invalidateToxic();
+  let calls = 0, filtered = 0;
+  globalThis.chrome = { runtime: { sendMessage: async () => { calls++; return { ok: true, scores: { ...zero(), threat: 0.9 } }; } } };
+  const node = element(), s = state();
+  content.checkToxic(node, 'youtube', s, () => filtered++);
+  content.checkToxic(node, 'youtube', s, () => filtered++);
+  await tick();
+  assert.equal(calls, 1);
+  assert.equal(filtered, 1);
+  assert.equal(node.style.getPropertyValue('display'), 'none');
+  assert.equal(s.violationCounter.size, 0);
+  assert.equal(s.bannedUsers.size, 0);
+  content.invalidateToxic();
+  assert.equal(node.style.getPropertyValue('display'), '');
+});
+
+test('pending AI results are ignored after remount, text reuse, removal, or filter disable', async () => {
+  for (const invalidate of [() => content.invalidateToxic(), node => { node.text = 'changed'; },
+    node => { node.isConnected = false; }, (_node, s) => { s.filterEnabled = false; }]) {
+    content.invalidateToxic();
+    let resolve;
+    globalThis.chrome = { runtime: { sendMessage: () => new Promise(r => { resolve = r; }) } };
+    const node = element(), s = state();
+    content.checkToxic(node, 'youtube', s, () => assert.fail('stale result applied'));
+    invalidate(node, s);
+    resolve({ ok: true, scores: { ...zero(), threat: 1 } });
+    await tick();
+    assert.equal(node.style.getPropertyValue('display'), '');
+  }
+});
+
+test('unavailable or malformed server leaves comments visible; NG-hidden comments are preserved', async () => {
+  for (const response of [{ ok: false, error: 'unavailable' }, { ok: true, scores: {} }]) {
+    content.invalidateToxic();
+    globalThis.chrome = { runtime: { sendMessage: async () => response } };
+    const node = element();
+    content.checkToxic(node, 'youtube', state(), () => assert.fail('failed response hid comment'));
+    await tick();
+    assert.equal(node.style.getPropertyValue('display'), '');
+  }
+  content.invalidateToxic();
+  globalThis.chrome = { runtime: { sendMessage: async () => ({ ok: true, scores: { ...zero(), threat: 1 } }) } };
+  const node = element();
+  content.checkToxic(node, 'youtube', state(), () => {});
+  await tick();
+  delete node.dataset.saijiToxic; // NGワード/手動ミュートが非表示を引き継ぐ
+  content.invalidateToxic();
+  assert.equal(node.style.getPropertyValue('display'), 'none');
+});
+
+test('reused AI-hidden DOM nodes are restored before classifying new text', async () => {
+  content.invalidateToxic();
+  globalThis.chrome = { runtime: { sendMessage: async () => ({ ok: true, scores: { ...zero(), threat: 1 } }) } };
+  const node = element();
+  content.checkToxic(node, 'youtube', state(), () => {});
+  await tick();
+  assert.equal(node.style.getPropertyValue('display'), 'none');
+  node.text = 'new safe comment';
+  globalThis.chrome.runtime.sendMessage = async () => ({ ok: true, scores: zero() });
+  content.checkToxic(node, 'youtube', state(), () => {});
+  await tick();
+  assert.equal(node.style.getPropertyValue('display'), '');
+});
+
+function mockBackground(enabled, sendMessage) {
+  globalThis.chrome = {
+    storage: { local: { get: async () => ({ toxicSettings: { enabled, backend: 'wasm', thresholds: {} } }) } },
+    offscreen: { hasDocument: async () => true },
+    runtime: { sendMessage },
+  };
+  globalThis.fetch = () => assert.fail('background must not send comments over HTTP');
+}
+test('background uses the internal worker, caches scores, and handles failures', async () => {
+  let requests = 0;
+  const send = async message => {
+    requests++;
+    assert.equal(message.target, 'saiji-inference');
+    assert.equal(message.preference, 'wasm');
+    assert.equal(message.text, 'cache test');
+    return { ok: true, scores: zero() };
+  };
+  mockBackground(false, send);
+  assert.equal((await background.judgeToxic('cache test')).error, 'disabled');
+  mockBackground(true, send);
+  assert.equal((await background.judgeToxic('cache test')).ok, true);
+  assert.equal((await background.judgeToxic('cache test')).ok, true);
+  assert.equal(requests, 1);
+  chrome.runtime.sendMessage = async () => { throw Error('worker failed'); };
+  assert.equal((await background.judgeToxic('timeout test')).error, 'unavailable');
+  chrome.runtime.sendMessage = async () => ({ ok: true, scores: { threat: 1 } });
+  assert.equal((await background.judgeToxic('bad scores')).error, 'invalid_scores');
+});
+test('background bounds pending inference requests to 32', async () => {
+  const releases = [];
+  mockBackground(true, () => new Promise(resolve => releases.push(() => resolve({ ok: true, scores: zero() }))));
+  const pending = Array.from({ length: 32 }, (_, i) => background.judgeToxic(`busy ${i}`));
+  await tick();
+  assert.equal((await background.judgeToxic('overflow')).error, 'busy');
+  releases.forEach(release => release());
+  assert.ok((await Promise.all(pending)).every(result => result.ok));
+});

@@ -1,3 +1,9 @@
+> AIフィルタの現在の実装はブラウザ内のWebGPU/WASMです。利用手順は [CLASSIFIER.md](CLASSIFIER.md) を参照してください。従来のPythonサーバーはデバッグ用です。
+
+# ローカル分類モデルの最新版
+
+HF版Saiji-Toxic-v2のセットアップ・CPU/CUDA/Apple Silicon設定は [CLASSIFIER.md](CLASSIFIER.md) を参照してください。以下の旧Toxic.v2セットアップ説明より最新版の手順を優先してください。
+
 # 塞耳 Saiji（さいじ）
 
 > YouTube・Twitch のライブチャットから、不快なコメントを静かに消す Chrome 拡張機能
@@ -178,6 +184,64 @@ YouTube / Twitch のチャット欄
 ---
 
 ## 開発者向け
+
+### AIフィルタ（ローカル Toxic.v2、試験機能）
+
+日本語コメントを10項目で判定し、設定した項目のスコアがしきい値以上なら非表示にします。
+NGワードと追放リストを先に適用し、それに該当しないコメントだけAIに渡します。
+AIによる非表示は自動追放の違反カウントに加算しません。
+
+1. 非公開モデルの `config.json`、`tokenizer.json`、`tokenizer_config.json`、`model.safetensors` をリポジトリ直下の `Toxic.v2/` に配置します。モデルカードも手元に保存してください。モデルは拡張・Git・リリースZIPに含めません。
+2. Python 3.10以上で環境を作り、依存関係をインストールします（初回のみインターネット接続が必要）。
+
+```powershell
+python -m venv .venv-toxic
+.\.venv-toxic\Scripts\python.exe -m pip install -r local-toxic/requirements.txt
+```
+
+既存のPyTorchを利用する場合は `python -m venv --system-site-packages .venv-toxic` でも作成できます。
+今回のローカル検証はこの方法で作成した環境を使っています。
+
+3. サーバーを起動します。標準はCPUです。終了は Ctrl+C。
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\start-toxic.ps1
+# CUDA対応のPyTorchがある場合のみ:
+powershell -ExecutionPolicy Bypass -File .\start-toxic.ps1 -Device cuda
+```
+
+4. `npm run build` 後、Chromeの拡張管理画面で拡張を再読み込みし、YouTube/Twitchのページも再読み込みします。
+5. 設定の **AIフィルタ** タブで「サーバー接続確認」を実行し、PC内への接続権限を許可します。「AIフィルタを有効にする」を選び、項目・しきい値を調整して保存します。
+6. 同じタブの試し判定で10項目のスコアを確認できます。
+
+初期設定は無効です。暴言・性的表現・脅迫は0.6、ネタバレ・宣伝・スパムは0.7を初期値とします。
+「全体」「差別・政治」「指示」「鳩」は初期設定では対象外です。
+モデルの「差別」は中立的な政治発言も含み、「指示」は丁寧な攻略アドバイスも含みます。
+「全体」はすべての配信向け不適切話題を含むため、罵倒だけを消したい場合には使わないでください。
+
+判定前にNFKC正規化し、最大128トークンに切り詰めます。長文の末尾は判定対象外になりえます。
+非同期判定なのでコメントが一瞬表示される場合があります。サーバー停止・3秒のタイムアウト・混雑・不正な応答ではAIで隠さず、NGワード判定を継続します。
+同時リクエストは4件まで、直近256件のスコアは最大60秒だけメモリにキャッシュします。混雑時のコメントは再判定を保証しません。
+AIを無効化または設定変更するとAIが隠した既存コメントを戻します。変更した設定で既存コメントも再判定したい場合はページを再読み込みしてください。
+
+コメント本文だけを拡張のバックグラウンドから `http://127.0.0.1:8765/judge` に送り、外部サービスへは送信しません。
+通常利用では本文をログ・ファイルに保存しません。サーバーは127.0.0.1だけで待ち受け、ウェブページからのOriginと不正なHostを拒否します。
+初回のライブラリ導入を除き、モデルの自動ダウンロードやHugging Faceトークンは不要です。
+同梱のモデルカードはJTF v3と記載されています。フォルダ・リポジトリ名との版数差があるため、本実装は実ファイルの10ラベル定義を検証して読み込みます。
+モデルを公開配布・商用利用する場合は、モデルカードにあるベースモデルと学習データのライセンス条件を確認してください。
+
+検証コマンド:
+
+```powershell
+npm run typecheck
+npm test
+python -m unittest discover -s tests -p 'test_*.py'
+# 手元の非公開重みでCPUのHTTP実推論（CIでは実行しません）
+.\.venv-toxic\Scripts\python.exe tests/real-toxic-smoke.py
+```
+
+実推論スモークだけは固定した試験文と結果を `logs/toxic-smoke.json` に保存します（Git対象外）。
+自動テスト・CPUのHTTP実推論と、YouTube/Twitchでの実ブラウザ動作・CUDA性能は別の確認です。
 
 ### ビルドコマンド
 

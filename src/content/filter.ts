@@ -1,5 +1,5 @@
 import type { FilterResult, FilterState, Platform } from '../shared/types';
-import { getAuthorId, getMessageText } from '../shared/selectors';
+import { getAuthorId, getMessageText, detectWatchMode } from '../shared/selectors';
 
 const VIOLATION_THRESHOLD = 3;
 
@@ -23,16 +23,26 @@ export function processElement(
   const authorId = getAuthorId(el, platform);
   const text     = getMessageText(el, platform);
 
-  // ① BL 済みユーザーは即削除
+  // ① BL 済みユーザーは即非表示
   if (authorId && state.bannedUsers.has(authorId)) {
-    el.remove();
+    delete (el as HTMLElement).dataset.saijiToxic;
+    (el as HTMLElement).style.setProperty('display', 'none', 'important');
     return { removed: true, reason: 'blacklisted', authorId };
   }
 
   // ② NGワード判定（platform フィルタ + 正規化）
+  const watchMode = detectWatchMode();
   const normalizedText = normalize(text);
   const matched = state.ngWords.some(ng => {
-    if (ng.platform !== 'both' && ng.platform !== platform) return false;
+    if (watchMode === 'normal') {
+      if (ng.platform !== 'both' && ng.platform !== 'youtube_normal') return false;
+    } else {
+      if (platform === 'youtube') {
+        if (ng.platform !== 'both' && ng.platform !== 'youtube_live') return false;
+      } else if (platform === 'twitch') {
+        if (ng.platform !== 'both' && ng.platform !== 'twitch') return false;
+      }
+    }
     return normalizedText.includes(normalize(ng.word));
   });
 
@@ -40,7 +50,9 @@ export function processElement(
     return { removed: false, reason: null, authorId };
   }
 
-  el.remove();
+  (el as HTMLElement).style.setProperty('display', 'none', 'important');
+
+  delete (el as HTMLElement).dataset.saijiToxic;
 
   // ③ 違反カウント更新
   if (authorId) {
