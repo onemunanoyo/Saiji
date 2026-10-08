@@ -69,6 +69,7 @@ chrome.webNavigation.onHistoryStateUpdated.addListener(details => {
 // ── メッセージ受信 ────────────────────────────────────────
 chrome.runtime.onMessage.addListener(
     (msg: Message, _sender, sendResponse) => {
+      if ((msg as { type: string }).type === 'BROWSER_INFERENCE') return false;
       void handleMessage(msg, sendResponse).catch(() => sendResponse({ ok: false, error: 'unavailable' }));
       return true; // 非同期 sendResponse のため
     }

@@ -1,3 +1,5 @@
+> AIフィルタの現在の実装はブラウザ内のWebGPU/WASMです。利用手順は [CLASSIFIER.md](CLASSIFIER.md) を参照してください。従来のPythonサーバーはデバッグ用です。
+
 # ローカル分類モデルの最新版
 
 HF版Saiji-Toxic-v2のセットアップ・CPU/CUDA/Apple Silicon設定は [CLASSIFIER.md](CLASSIFIER.md) を参照してください。以下の旧Toxic.v2セットアップ説明より最新版の手順を優先してください。

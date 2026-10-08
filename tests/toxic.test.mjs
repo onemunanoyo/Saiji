@@ -22,7 +22,7 @@ test('benchmark preset matches max of first five at frozen threshold', () => {
 
 test('invalid settings and incomplete or nonfinite scores are rejected', () => {
   assert.deepEqual(policy.cleanToxicSettings({ enabled: true, thresholds: { threat: -1, spam: NaN, pigeon: 2, harassment: 0.9 } }),
-      { enabled: true, thresholds: { harassment: 0.9 } });
+      { enabled: true, backend: 'auto', thresholds: { harassment: 0.9 } });
   assert.equal(policy.parseScores({ threat: 1 }), null);
   assert.equal(policy.parseScores({ ...zero(), threat: NaN }), null);
   assert.equal(policy.parseScores({ ...zero(), spam: '0.8' }), null);
@@ -109,33 +109,38 @@ test('reused AI-hidden DOM nodes are restored before classifying new text', asyn
   assert.equal(node.style.getPropertyValue('display'), '');
 });
 
-test('background sends text only to fixed localhost, caches valid scores, and handles failures', async () => {
-  let enabled = false, requests = 0;
-  globalThis.chrome = { storage: { local: { get: async () => ({ toxicSettings: { enabled, thresholds: { threat: 0.6 } } }) } } };
-  globalThis.fetch = async (url, options) => {
-    requests++;
-    assert.equal(url, 'http://127.0.0.1:8765/judge');
-    assert.equal(options.redirect, 'error');
-    assert.deepEqual(JSON.parse(options.body), { text: 'cache test' });
-    return { ok: true, json: async () => ({ scores: zero() }) };
+function mockBackground(enabled, sendMessage) {
+  globalThis.chrome = {
+    storage: { local: { get: async () => ({ toxicSettings: { enabled, backend: 'wasm', thresholds: {} } }) } },
+    offscreen: { hasDocument: async () => true },
+    runtime: { sendMessage },
   };
+  globalThis.fetch = () => assert.fail('background must not send comments over HTTP');
+}
+test('background uses the internal worker, caches scores, and handles failures', async () => {
+  let requests = 0;
+  const send = async message => {
+    requests++;
+    assert.equal(message.target, 'saiji-inference');
+    assert.equal(message.preference, 'wasm');
+    assert.equal(message.text, 'cache test');
+    return { ok: true, scores: zero() };
+  };
+  mockBackground(false, send);
   assert.equal((await background.judgeToxic('cache test')).error, 'disabled');
-  assert.equal(requests, 0);
-  enabled = true;
+  mockBackground(true, send);
   assert.equal((await background.judgeToxic('cache test')).ok, true);
   assert.equal((await background.judgeToxic('cache test')).ok, true);
   assert.equal(requests, 1);
-  globalThis.fetch = async () => { throw new Error('timeout'); };
+  chrome.runtime.sendMessage = async () => { throw Error('worker failed'); };
   assert.equal((await background.judgeToxic('timeout test')).error, 'unavailable');
-  globalThis.fetch = async () => ({ ok: true, json: async () => ({ scores: { threat: 1 } }) });
-  assert.equal((await background.judgeToxic('bad scores')).error, 'unavailable');
+  chrome.runtime.sendMessage = async () => ({ ok: true, scores: { threat: 1 } });
+  assert.equal((await background.judgeToxic('bad scores')).error, 'invalid_scores');
 });
-
-test('background bounds concurrent requests to four', async () => {
-  globalThis.chrome = { storage: { local: { get: async () => ({ toxicSettings: { enabled: true, thresholds: {} } }) } } };
+test('background bounds pending inference requests to 32', async () => {
   const releases = [];
-  globalThis.fetch = () => new Promise(resolve => releases.push(() => resolve({ ok: true, json: async () => ({ scores: zero() }) })));
-  const pending = Array.from({ length: 4 }, (_, i) => background.judgeToxic(`busy ${i}`));
+  mockBackground(true, () => new Promise(resolve => releases.push(() => resolve({ ok: true, scores: zero() }))));
+  const pending = Array.from({ length: 32 }, (_, i) => background.judgeToxic(`busy ${i}`));
   await tick();
   assert.equal((await background.judgeToxic('overflow')).error, 'busy');
   releases.forEach(release => release());

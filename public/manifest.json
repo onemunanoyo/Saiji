@@ -8,13 +8,13 @@
     "storage",
     "alarms",
     "webNavigation",
-    "tabs"
+    "tabs",
+    "offscreen"
   ],
   "host_permissions": [
     "*://*.youtube.com/*",
     "*://*.twitch.tv/*"
   ],
-  "optional_host_permissions": ["http://127.0.0.1/*"],
   "background": {
     "service_worker": "background/index.js"
   },
@@ -24,22 +24,28 @@
         "*://*.youtube.com/*",
         "*://*.twitch.tv/*"
       ],
-      "js": ["content/index.js"],
+      "js": [
+        "content/index.js"
+      ],
       "run_at": "document_idle"
     }
   ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16":  "icons/icon16.png",
-      "48":  "icons/icon48.png",
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     }
   },
   "options_page": "options.html",
   "icons": {
-    "16":  "icons/icon16.png",
-    "48":  "icons/icon48.png",
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
     "128": "icons/icon128.png"
+  },
+  "minimum_chrome_version": "120",
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; worker-src 'self'; connect-src 'self'"
   }
 }

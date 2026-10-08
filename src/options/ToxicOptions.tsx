@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getStorage, setStorage } from '../shared/storage';
 import { t } from '../shared/i18n';
-import { DEFAULT_TOXIC_SETTINGS, README_THRESHOLDS, TOXIC_LABELS, TOXIC_PERMISSION } from '../shared/toxic';
+import { DEFAULT_TOXIC_SETTINGS, README_THRESHOLDS, TOXIC_LABELS } from '../shared/toxic';
 import type { ToxicLabel, ToxicResponse, ToxicSettings } from '../shared/toxic';
 import type { Message } from '../shared/types';
 
@@ -28,10 +28,7 @@ export default function ToxicOptions() {
   async function save() {
     setBusy(true);
     try {
-      if (settings.enabled && !await chrome.permissions.request({ origins: [TOXIC_PERMISSION] })) {
-        setStatus(t('ai_permission_denied'));
-        return;
-      }
+
       await setStorage('toxicSettings', settings);
       setStatus(t('ai_saved'));
     } catch {
@@ -42,12 +39,9 @@ export default function ToxicOptions() {
   async function health() {
     setBusy(true);
     try {
-      if (!await chrome.permissions.request({ origins: [TOXIC_PERMISSION] })) {
-        setStatus(t('ai_permission_denied'));
-        return;
-      }
+
       const response = await chrome.runtime.sendMessage({ type: 'TOXIC_HEALTH' } satisfies Message);
-      setStatus(t(response?.ok ? 'ai_ready' : 'ai_unavailable'));
+      setStatus(response?.ok ? `準備完了（${response.backend}）` : `準備できません：${response?.error ?? '不明なエラー'}`);
     } catch { setStatus(t('ai_unavailable')); }
     finally { setBusy(false); }
   }
@@ -68,7 +62,11 @@ export default function ToxicOptions() {
     <label><input type="checkbox" checked={settings.enabled}
         onChange={e => { setSettings({ ...settings, enabled: e.target.checked }); setStatus(''); }} /> {t('ai_enable')}</label>
     <p style={{ fontSize: 12 }}>{t('ai_threshold_hint')}</p>
-    <p>Saiji-Toxic-v2 / 本文のみ・最大128トークン</p>
+    <p>Saiji-Toxic-v2 / ブラウザ内推論・最大128トークン</p>
+    <label>処理方式 <select value={settings.backend ?? 'auto'} onChange={e => setSettings({ ...settings, backend: e.target.value as 'auto' | 'webgpu' | 'wasm' })}>
+      <option value="auto">自動（GPU優先）</option><option value="webgpu">WebGPU（GPU）</option><option value="wasm">WASM（CPU）</option>
+    </select></label>
+    <p style={{ fontSize: 12 }}>初回のモデル読み込みには時間がかかります。本文は外部送信されません。処理方式を変更したら保存して準備確認してください。</p>
     <button onClick={() => { setSettings({ ...settings, thresholds: structuredClone(DEFAULT_TOXIC_SETTINGS.thresholds) }); setStatus(''); }}>1,000件ベンチの設定</button>
     <button onClick={() => { setSettings({ ...settings, thresholds: { ...README_THRESHOLDS } }); setStatus(''); }}>理由別の設定</button>
     <p style={{ fontSize: 12 }}>ベンチ設定は先頭5ラベルの最大値 ≥ 0.005039215で非表示。実験用の閾値で、見逃しが残ります。変更後は保存してください。</p>

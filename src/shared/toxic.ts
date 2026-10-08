@@ -7,12 +7,11 @@ export type ToxicLabel = typeof TOXIC_LABELS[number];
 export type ToxicScores = Record<ToxicLabel, number>;
 export interface ToxicSettings {
   enabled: boolean;
+  backend?: 'auto' | 'webgpu' | 'wasm';
   thresholds: Partial<Record<ToxicLabel, number>>;
 }
 export type ToxicResponse = { ok: true; scores: ToxicScores } | { ok: false; error: string };
 
-export const TOXIC_ORIGIN = 'http://127.0.0.1:8765';
-export const TOXIC_PERMISSION = 'http://127.0.0.1/*';
 export const README_THRESHOLDS: ToxicSettings['thresholds'] = { harassment: 0.6, obscene: 0.6, discrimination: 0.6, threat: 0.6, spoiler: 0.7, self_promotion: 0.7, spam: 0.7 };
 
 export const DEFAULT_TOXIC_SETTINGS: ToxicSettings = {
@@ -32,7 +31,8 @@ export function cleanToxicSettings(value: unknown): ToxicSettings {
       }
     }
   }
-  return { enabled: raw.enabled === true, thresholds };
+  const backend = raw.backend === 'webgpu' || raw.backend === 'wasm' ? raw.backend : 'auto';
+  return { enabled: raw.enabled === true, thresholds, backend };
 }
 
 export function parseScores(value: unknown): ToxicScores | null {
