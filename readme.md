@@ -18,7 +18,10 @@ YouTube・Twitchのコメントを、自分の画面で非表示にするChrome�
 
 ## インストール
 
-Chrome Web Storeの掲載URLは公開後に案内します。
+### Chrome Web Store 
+
+https://chromewebstore.google.com/detail/%E5%A1%9E%E8%80%B3-saiji/onimoeehiofocnalanlkchmjddbeleid?hl=ja|
+
 
 ソースから利用する場合は、Node.jsとnpmを用意して次を実行します。
 
