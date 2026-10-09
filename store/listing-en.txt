@@ -1,0 +1,11 @@
+Saiji — Comment Filter
+
+Short description: Filter YouTube/Twitch comments with local rules and optional experimental AI for Japanese comments.
+
+Saiji helps you filter comments on YouTube and Twitch using NG words and muted users. Its optional on-device AI filter is an experiment designed for Japanese stream comments. UI translations do not imply AI support for other languages; accuracy outside Japanese has not been evaluated.
+
+AI is off by default. Enabling it can download about 650 MB of model files from Hugging Face; inference then runs locally with WebGPU or WASM. Comments are not uploaded. The model loads only when needed and is released when target tabs close or filtering is disabled. Saved model files remain cached.
+
+AI may hide harmless comments and miss harmful ones. Comments may appear briefly before classification. Under heavy load, comments that exceed the queue limit stay visible; rule-based filtering continues. AI decisions do not automatically ban users. CPU inference can be slow and AI increases memory use while active.
+
+Chrome 120+ required. Not affiliated with YouTube, Twitch or Hugging Face.

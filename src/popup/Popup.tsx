@@ -53,7 +53,7 @@ export default function Popup() {
     <div style={s.wrap}>
       {/* ヘッダー */}
       <div style={s.header}>
-        <span style={s.title}>塞耳 Saiji</span>
+        <span style={s.title}>{t('ext_name')}</span>
         <span style={{ ...s.badge, background: enabled ? '#4F46E5' : '#9CA3AF' }}>
           {enabled ? t('badge_on') : t('badge_off')}
         </span>

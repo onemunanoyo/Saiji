@@ -1,71 +1,243 @@
 {
-  "ext_name":        { "message": "Saiji" },
-  "ext_description": { "message": "YouTube 및 Twitch 라이브 채팅에서 불쾌한 댓글을 필터링합니다" },
-
-  "loading":         { "message": "로딩 중..." },
-  "badge_on":        { "message": "ON" },
-  "badge_off":       { "message": "OFF" },
-
-  "stat_hidden_label": { "message": "숨김" },
-  "stat_hidden_unit":  { "message": "개" },
-  "stat_banned_label": { "message": "추방" },
-  "stat_banned_unit":  { "message": "명" },
-
-  "filter_turn_off":       { "message": "필터 끄기" },
-  "filter_turn_on":        { "message": "필터 켜기" },
-  "comment_lock_turn_off": { "message": "댓글 잠금 해제" },
-  "comment_lock_turn_on":  { "message": "댓글 잠금" },
-  "open_settings":         { "message": "설정・NG 단어 관리" },
-
-  "options_title": { "message": "Saiji — 설정" },
+  "ext_name": {
+    "message": "Saiji"
+  },
+  "ext_description": {
+    "message": "YouTube/Twitch 댓글 필터. 일본어 댓글용 실험적 로컬 AI 필터를 선택적으로 사용할 수 있습니다."
+  },
+  "loading": {
+    "message": "로딩 중..."
+  },
+  "badge_on": {
+    "message": "ON"
+  },
+  "badge_off": {
+    "message": "OFF"
+  },
+  "stat_hidden_label": {
+    "message": "숨김"
+  },
+  "stat_hidden_unit": {
+    "message": "개"
+  },
+  "stat_banned_label": {
+    "message": "추방"
+  },
+  "stat_banned_unit": {
+    "message": "명"
+  },
+  "filter_turn_off": {
+    "message": "필터 끄기"
+  },
+  "filter_turn_on": {
+    "message": "필터 켜기"
+  },
+  "comment_lock_turn_off": {
+    "message": "댓글 잠금 해제"
+  },
+  "comment_lock_turn_on": {
+    "message": "댓글 잠금"
+  },
+  "open_settings": {
+    "message": "설정・NG 단어 관리"
+  },
+  "options_title": {
+    "message": "Saiji — 설정"
+  },
   "tab_ngwords": {
     "message": "NG 단어 ($COUNT$)",
-    "placeholders": { "count": { "content": "$1" } }
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   },
   "tab_blacklist": {
     "message": "추방 목록 ($COUNT$)",
-    "placeholders": { "count": { "content": "$1" } }
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   },
-
-  "platform_toggle_title":  { "message": "대상 플랫폼 전환" },
-  "ng_input_placeholder":   { "message": "NG 단어 입력 (Enter로 추가)" },
-  "add_button":             { "message": "추가" },
-  "platform_hint_both":     { "message": "모든 라이브 방송 및 YouTube 댓글에 적용됩니다" },
-  "platform_hint_youtube_live":  { "message": "YouTube 라이브 방송 및 프리미어 공개에만 적용됩니다" },
-  "platform_hint_twitch":   { "message": "Twitch에만 적용됩니다" },
-  "platform_hint_youtube_normal": { "message": "YouTube 일반 동영상 댓글에만 적용됩니다" },
-  "error_empty_word":       { "message": "단어를 입력하세요" },
-  "error_duplicate_word":   { "message": "같은 단어・같은 대상이 이미 등록되어 있습니다 (표기 차이 포함)" },
-  "ng_empty":               { "message": "등록된 NG 단어가 없습니다" },
-  "blacklist_empty":        { "message": "추방된 사용자가 없습니다" },
-  "remove_button":          { "message": "해제" },
-  "delete_button":          { "message": "삭제" },
-  "mute_user":              { "message": "Saiji로 사용자 뮤트" },
-
-  "tab_ai": { "message": "AI 필터" },
-  "ai_description": { "message": "WebGPU 또는 WASM으로 브라우저 안에서 Saiji-Toxic-v2를 실행합니다. 댓글을 외부로 전송하지 않으며 Python 서버가 필요하지 않습니다. 첫 모델 로딩에는 시간이 걸립니다." },
-  "ai_caveat": { "message": "AI가 잘못 판정할 수 있으며 숨기기 전에 댓글이 잠깐 보일 수 있습니다. AI 판정은 자동 차단 횟수에 포함되지 않습니다. 차별 항목은 중립적인 정치 주제도 포함합니다. 전체 항목은 지시 및 다른 방송 주제도 포함합니다." },
-  "ai_enable": { "message": "AI 필터 활성화" },
-  "ai_threshold_hint": { "message": "선택한 항목이 임계값 이상이면 숨깁니다. 값이 높을수록 신중하게 판정합니다. 전체, 차별/정치, 지시, 다른 방송 항목은 기본적으로 꺼져 있습니다." },
-  "ai_threshold": { "message": "임계값" },
-  "ai_save": { "message": "설정 저장" },
-  "ai_check": { "message": "모델 준비 확인" },
-  "ai_saved": { "message": "저장되었습니다. 열린 페이지에도 적용됩니다." },
-  "ai_ready": { "message": "분류 모델이 준비되었습니다" },
-  "ai_unavailable": { "message": "모델 준비 또는 추론에 실패했습니다. CPU(WASM)로 전환해 보세요." },
-  "ai_permission_denied": { "message": "로컬 판정 서버 연결 권한이 거부되었습니다." },
-  "ai_test_hint": { "message": "먼저 활성화하고 저장한 후 문장을 입력하여 10개 점수를 확인하세요." },
-  "ai_test_input": { "message": "판정할 문장" },
-  "ai_test": { "message": "판정" },
-  "ai_test_disabled": { "message": "AI 필터를 활성화하고 저장하세요." },
-  "ai_label_toxicity": { "message": "전체 (방송에서 피할 주제)" },
-  "ai_label_harassment": { "message": "욕설·도발" },
-  "ai_label_obscene": { "message": "성적·음란" },
-  "ai_label_discrimination": { "message": "차별·정치" },
-  "ai_label_threat": { "message": "협박" },
-  "ai_label_spoiler": { "message": "스포일러" },
-  "ai_label_instruction": { "message": "지시·공략 조언" },
-  "ai_label_pigeon": { "message": "다른 방송 주제" },
-  "ai_label_self_promotion": { "message": "홍보" },
-  "ai_label_spam": { "message": "스팸" }
+  "platform_toggle_title": {
+    "message": "대상 플랫폼 전환"
+  },
+  "ng_input_placeholder": {
+    "message": "NG 단어 입력 (Enter로 추가)"
+  },
+  "add_button": {
+    "message": "추가"
+  },
+  "platform_hint_both": {
+    "message": "모든 라이브 방송 및 YouTube 댓글에 적용됩니다"
+  },
+  "platform_hint_youtube_live": {
+    "message": "YouTube 라이브 방송 및 프리미어 공개에만 적용됩니다"
+  },
+  "platform_hint_twitch": {
+    "message": "Twitch에만 적용됩니다"
+  },
+  "platform_hint_youtube_normal": {
+    "message": "YouTube 일반 동영상 댓글에만 적용됩니다"
+  },
+  "error_empty_word": {
+    "message": "단어를 입력하세요"
+  },
+  "error_duplicate_word": {
+    "message": "같은 단어・같은 대상이 이미 등록되어 있습니다 (표기 차이 포함)"
+  },
+  "ng_empty": {
+    "message": "등록된 NG 단어가 없습니다"
+  },
+  "blacklist_empty": {
+    "message": "추방된 사용자가 없습니다"
+  },
+  "remove_button": {
+    "message": "해제"
+  },
+  "delete_button": {
+    "message": "삭제"
+  },
+  "mute_user": {
+    "message": "Saiji로 사용자 뮤트"
+  },
+  "tab_ai": {
+    "message": "AI 필터"
+  },
+  "ai_description": {
+    "message": "WebGPU 또는 WASM으로 브라우저 안에서 Saiji-Toxic-v2를 실행합니다. 댓글을 외부로 전송하지 않으며 Python 서버가 필요하지 않습니다. 첫 모델 로딩에는 시간이 걸립니다."
+  },
+  "ai_caveat": {
+    "message": "AI가 잘못 판정할 수 있으며 숨기기 전에 댓글이 잠깐 보일 수 있습니다. AI 판정은 자동 차단 횟수에 포함되지 않습니다. 차별 항목은 중립적인 정치 주제도 포함합니다. 전체 항목은 지시 및 다른 방송 주제도 포함합니다."
+  },
+  "ai_enable": {
+    "message": "AI 필터 활성화"
+  },
+  "ai_threshold_hint": {
+    "message": "선택한 분류가 임계값 이상이면 숨깁니다. 임계값이 높을수록 숨기는 댓글이 줄어듭니다."
+  },
+  "ai_threshold": {
+    "message": "임계값"
+  },
+  "ai_save": {
+    "message": "설정 저장"
+  },
+  "ai_check": {
+    "message": "모델 준비 확인"
+  },
+  "ai_saved": {
+    "message": "저장되었습니다. 열린 페이지에도 적용됩니다."
+  },
+  "ai_ready": {
+    "message": "분류 모델이 준비되었습니다"
+  },
+  "ai_unavailable": {
+    "message": "모델 준비 또는 추론에 실패했습니다. CPU(WASM)로 전환해 보세요."
+  },
+  "ai_test_hint": {
+    "message": "먼저 활성화하고 저장한 후 문장을 입력하여 10개 점수를 확인하세요."
+  },
+  "ai_test_input": {
+    "message": "판정할 문장"
+  },
+  "ai_test": {
+    "message": "판정"
+  },
+  "ai_test_disabled": {
+    "message": "AI 필터를 활성화하고 저장하세요."
+  },
+  "ai_label_toxicity": {
+    "message": "전체 (방송에서 피할 주제)"
+  },
+  "ai_label_harassment": {
+    "message": "욕설·도발"
+  },
+  "ai_label_obscene": {
+    "message": "성적·음란"
+  },
+  "ai_label_discrimination": {
+    "message": "차별·정치"
+  },
+  "ai_label_threat": {
+    "message": "협박"
+  },
+  "ai_label_spoiler": {
+    "message": "스포일러"
+  },
+  "ai_label_instruction": {
+    "message": "지시·공략 조언"
+  },
+  "ai_label_pigeon": {
+    "message": "다른 방송 주제"
+  },
+  "ai_label_self_promotion": {
+    "message": "홍보"
+  },
+  "ai_label_spam": {
+    "message": "스팸"
+  },
+  "ai_experimental": {
+    "message": "실험 기능: AI 필터는 일본어 방송 댓글용입니다. 다른 언어의 정확도는 검증하지 않았으며, 유해 댓글을 놓치거나 무해한 댓글을 숨길 수 있습니다."
+  },
+  "ai_preparing": {
+    "message": "준비 중입니다. AI 필터를 켜고 YouTube/Twitch 탭을 열어 주세요."
+  },
+  "ai_idle": {
+    "message": "중지됨: AI 필터를 켜고 YouTube/Twitch 탭을 열어 주세요."
+  },
+  "ai_ready_backend": {
+    "message": "준비 완료 ($1)"
+  },
+  "ai_download": {
+    "message": "모델이 없으면 Hugging Face에서 다운로드"
+  },
+  "ai_download_hint": {
+    "message": "첫 다운로드는 약 650MB이며 브라우저에 저장됩니다. 모델 제공자는 IP 등 연결 정보를 받지만 댓글 내용은 전송하지 않습니다. 변경 후 저장해 주세요."
+  },
+  "ai_lifecycle": {
+    "message": "분류가 필요할 때만 실행합니다. 대상 탭을 모두 닫거나 필터를 끄면 메모리에서 모델을 해제하며 저장된 모델은 유지합니다."
+  },
+  "ai_model_info": {
+    "message": "Saiji-Toxic-v2 / 브라우저 내 추론, 최대 128토큰"
+  },
+  "ai_backend": {
+    "message": "처리 방식"
+  },
+  "ai_backend_auto": {
+    "message": "자동 (GPU 우선)"
+  },
+  "ai_backend_gpu": {
+    "message": "WebGPU (GPU)"
+  },
+  "ai_backend_cpu": {
+    "message": "WASM (CPU)"
+  },
+  "ai_backend_hint": {
+    "message": "첫 준비에는 시간과 메모리가 필요합니다. 처리 방식 변경 후 저장하고 모델 준비를 확인해 주세요."
+  },
+  "ai_preset_benchmark": {
+    "message": "실험용 설정"
+  },
+  "ai_preset_reasons": {
+    "message": "분류별 설정"
+  },
+  "ai_preset_hint": {
+    "message": "실험용 설정은 첫 5개 분류 중 하나라도 약 0.005039215 이상이면 숨깁니다. 오탐과 누락이 남아 있으므로 변경 후 저장해 주세요."
+  },
+  "privacy_link": {
+    "message": "개인정보 처리 안내"
+  },
+  "platform_label_both": {
+    "message": "전체"
+  },
+  "platform_label_youtube_live": {
+    "message": "YouTube 라이브"
+  },
+  "platform_label_twitch": {
+    "message": "Twitch"
+  },
+  "platform_label_youtube_normal": {
+    "message": "YouTube 댓글"
+  }
 }

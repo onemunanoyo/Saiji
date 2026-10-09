@@ -3,12 +3,11 @@
   "name": "__MSG_ext_name__",
   "version": "1.0.0",
   "description": "__MSG_ext_description__",
-  "default_locale": "ja",
+  "default_locale": "en",
   "permissions": [
     "storage",
     "alarms",
     "webNavigation",
-    "tabs",
     "offscreen",
     "unlimitedStorage"
   ],

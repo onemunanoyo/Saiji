@@ -38,7 +38,11 @@ Pythonの起動・停止スクリプトとserver.pyは比較・デバッグ用�
 
 ## 配布について
 
-現段階はローカル読み込み用で、同梱またはHF取得に対応しています。FP32のモデルは約641MBあり、Chrome Store向けの最終パッケージ化は未実施です。公開前にモデルの量子化またはモデル資産のダウンロード・キャッシュ方式を検討し、再評価とStore要件の確認を行います。実行コードはローカルに同梱します。
+`npm run package:store` でモデルを含まない本番ビルドを `release/extension` に作成し、`release/Saiji-1.0.0-store.zip` を生成します。JavaScriptと必要なWASM/MJSランタイム、ライセンス、プライバシー説明を同梱します。モデルは初回にHFから取得します。通常の `npm run build` はローカルモデル同梱のdistを生成します。
+
+日本語・英語・韓国語の表示に対応し、他のUI言語では英語にフォールバックします。AIは日本語コメント向けの実験機能であり、UIの多言語化は分類モデルの多言語対応を意味しません。
+
+申請手順、権限理由、外部モデル取得に関する審査説明は `store/SUBMISSION.md`、掲載文は `store/listing-*.txt`、ポリシー原稿は `PRIVACY.md`。プライバシーポリシーの公開先とStoreへの登録・申請は利用者が手動で行います。Store承認は未取得です。
 
 実ブラウザの計測記録は `logs/browser-smoke.json` と `logs/browser-benchmark-receipt.json` に保存しています。後者の再実行には `node tools/browser-benchmark.mjs <benchmark.jsonl>` を使います（隔離ブラウザのCDPポート9227が必要）。
 
@@ -63,3 +67,5 @@ Windowsの隔離Edge/WebGPUで、対象なしでは起動しないこと、最�
 ## 判定順序
 
 既存のNGワード・ブラックリストによる判定を先に行い、削除されたコメントはAIへ送信しません。表示が残ったコメントだけを分類します。親スレッドが非表示の場合も子コメントは分類しません。AI判定待ちの間に親が非表示になった場合は、AIによる追加の非表示・カウントを行いません。
+
+Store専用ビルドを隔離Edgeで実際に読み込み、英語UI、日韓のlocale fixture表示、HF取得とWebGPU判定、対象タブ終了による解放を確認しました（logs/store-browser-receipt.json）。通常ChromeとM5のStoreビルド実機確認は申請前に行ってください。
