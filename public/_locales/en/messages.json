@@ -1,71 +1,243 @@
 {
-  "ext_name":        { "message": "Saiji" },
-  "ext_description": { "message": "Filters unwanted comments from YouTube and Twitch live chats" },
-
-  "loading":         { "message": "Loading..." },
-  "badge_on":        { "message": "ON" },
-  "badge_off":       { "message": "OFF" },
-
-  "stat_hidden_label": { "message": "Hidden" },
-  "stat_hidden_unit":  { "message": "" },
-  "stat_banned_label": { "message": "Banned" },
-  "stat_banned_unit":  { "message": "" },
-
-  "filter_turn_off":       { "message": "Turn filter OFF" },
-  "filter_turn_on":        { "message": "Turn filter ON" },
-  "comment_lock_turn_off": { "message": "Unlock comments" },
-  "comment_lock_turn_on":  { "message": "Lock comments" },
-  "open_settings":         { "message": "Settings / NG Words" },
-
-  "options_title": { "message": "Saiji — Settings" },
+  "ext_name": {
+    "message": "Saiji"
+  },
+  "ext_description": {
+    "message": "Filter YouTube/Twitch comments with local rules and an optional experimental AI filter for Japanese comments."
+  },
+  "loading": {
+    "message": "Loading..."
+  },
+  "badge_on": {
+    "message": "ON"
+  },
+  "badge_off": {
+    "message": "OFF"
+  },
+  "stat_hidden_label": {
+    "message": "Hidden"
+  },
+  "stat_hidden_unit": {
+    "message": "comments"
+  },
+  "stat_banned_label": {
+    "message": "Banned"
+  },
+  "stat_banned_unit": {
+    "message": "users"
+  },
+  "filter_turn_off": {
+    "message": "Turn filter OFF"
+  },
+  "filter_turn_on": {
+    "message": "Turn filter ON"
+  },
+  "comment_lock_turn_off": {
+    "message": "Unlock comments"
+  },
+  "comment_lock_turn_on": {
+    "message": "Lock comments"
+  },
+  "open_settings": {
+    "message": "Settings / NG Words"
+  },
+  "options_title": {
+    "message": "Saiji — Settings"
+  },
   "tab_ngwords": {
     "message": "NG Words ($COUNT$)",
-    "placeholders": { "count": { "content": "$1" } }
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   },
   "tab_blacklist": {
     "message": "Banned List ($COUNT$)",
-    "placeholders": { "count": { "content": "$1" } }
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   },
-
-  "platform_toggle_title":  { "message": "Switch target platform" },
-  "ng_input_placeholder":   { "message": "Enter NG word (Enter to add)" },
-  "add_button":             { "message": "Add" },
-  "platform_hint_both":     { "message": "Applied to all streams and YouTube comments" },
-  "platform_hint_youtube_live":  { "message": "Applied to YouTube Live / Premiere only" },
-  "platform_hint_twitch":   { "message": "Applied to Twitch only" },
-  "platform_hint_youtube_normal": { "message": "Applied to YouTube normal comments only" },
-  "error_empty_word":       { "message": "Please enter a word" },
-  "error_duplicate_word":   { "message": "This word is already registered (including similar spellings)" },
-  "ng_empty":               { "message": "No NG words registered" },
-  "blacklist_empty":        { "message": "No banned users" },
-  "remove_button":          { "message": "Unban" },
-  "delete_button":          { "message": "Delete" },
-  "mute_user":              { "message": "Mute user with Saiji" },
-
-  "tab_ai": { "message": "AI filter" },
-  "ai_description": { "message": "Run Saiji-Toxic-v2 inside the browser using WebGPU or WASM. Comments stay local; no Python server is needed. Initial model loading takes time." },
-  "ai_caveat": { "message": "AI may misclassify comments. Comments may briefly appear before being hidden. AI results do not count toward automatic bans. Discrimination includes neutral political topics. Overall includes advice and other stream-specific topics." },
-  "ai_enable": { "message": "Enable AI filter" },
-  "ai_threshold_hint": { "message": "Hide when any checked category reaches its threshold. Higher values are more cautious. Overall, discrimination/politics, advice, and other-stream topics are unchecked by default." },
-  "ai_threshold": { "message": "Threshold" },
-  "ai_save": { "message": "Save settings" },
-  "ai_check": { "message": "Check model readiness" },
-  "ai_saved": { "message": "Saved. Settings also apply to open pages." },
-  "ai_ready": { "message": "The classifier is ready" },
-  "ai_unavailable": { "message": "Model initialization or inference failed. Try CPU (WASM)." },
-  "ai_permission_denied": { "message": "Permission to connect to the local classifier was denied." },
-  "ai_test_hint": { "message": "Enable and save first, then enter text to inspect all ten scores." },
-  "ai_test_input": { "message": "Text to classify" },
-  "ai_test": { "message": "Classify" },
-  "ai_test_disabled": { "message": "Enable and save the AI filter first." },
-  "ai_label_toxicity": { "message": "Overall (unwanted stream topics)" },
-  "ai_label_harassment": { "message": "Harassment" },
-  "ai_label_obscene": { "message": "Obscene" },
-  "ai_label_discrimination": { "message": "Discrimination / politics" },
-  "ai_label_threat": { "message": "Threat" },
-  "ai_label_spoiler": { "message": "Spoiler" },
-  "ai_label_instruction": { "message": "Unsolicited advice" },
-  "ai_label_pigeon": { "message": "Other-stream topics" },
-  "ai_label_self_promotion": { "message": "Self-promotion" },
-  "ai_label_spam": { "message": "Spam" }
+  "platform_toggle_title": {
+    "message": "Switch target platform"
+  },
+  "ng_input_placeholder": {
+    "message": "Enter NG word (Enter to add)"
+  },
+  "add_button": {
+    "message": "Add"
+  },
+  "platform_hint_both": {
+    "message": "Applied to all streams and YouTube comments"
+  },
+  "platform_hint_youtube_live": {
+    "message": "Applied to YouTube Live / Premiere only"
+  },
+  "platform_hint_twitch": {
+    "message": "Applied to Twitch only"
+  },
+  "platform_hint_youtube_normal": {
+    "message": "Applied to YouTube normal comments only"
+  },
+  "error_empty_word": {
+    "message": "Please enter a word"
+  },
+  "error_duplicate_word": {
+    "message": "This word is already registered (including similar spellings)"
+  },
+  "ng_empty": {
+    "message": "No NG words registered"
+  },
+  "blacklist_empty": {
+    "message": "No banned users"
+  },
+  "remove_button": {
+    "message": "Unban"
+  },
+  "delete_button": {
+    "message": "Delete"
+  },
+  "mute_user": {
+    "message": "Mute user with Saiji"
+  },
+  "tab_ai": {
+    "message": "AI filter"
+  },
+  "ai_description": {
+    "message": "Run Saiji-Toxic-v2 inside the browser using WebGPU or WASM. Comments stay local; no Python server is needed. Initial model loading takes time."
+  },
+  "ai_caveat": {
+    "message": "AI may misclassify comments. Comments may briefly appear before being hidden. AI results do not count toward automatic bans. Discrimination includes neutral political topics. Overall includes advice and other stream-specific topics."
+  },
+  "ai_enable": {
+    "message": "Enable AI filter"
+  },
+  "ai_threshold_hint": {
+    "message": "Hide when a selected category reaches its threshold. Higher thresholds hide fewer comments."
+  },
+  "ai_threshold": {
+    "message": "Threshold"
+  },
+  "ai_save": {
+    "message": "Save settings"
+  },
+  "ai_check": {
+    "message": "Check model readiness"
+  },
+  "ai_saved": {
+    "message": "Saved. Settings also apply to open pages."
+  },
+  "ai_ready": {
+    "message": "The classifier is ready"
+  },
+  "ai_unavailable": {
+    "message": "Model initialization or inference failed. Try CPU (WASM)."
+  },
+  "ai_test_hint": {
+    "message": "Enable and save first, then enter text to inspect all ten scores."
+  },
+  "ai_test_input": {
+    "message": "Text to classify"
+  },
+  "ai_test": {
+    "message": "Classify"
+  },
+  "ai_test_disabled": {
+    "message": "Enable and save the AI filter first."
+  },
+  "ai_label_toxicity": {
+    "message": "Overall (unwanted stream topics)"
+  },
+  "ai_label_harassment": {
+    "message": "Harassment"
+  },
+  "ai_label_obscene": {
+    "message": "Obscene"
+  },
+  "ai_label_discrimination": {
+    "message": "Discrimination / politics"
+  },
+  "ai_label_threat": {
+    "message": "Threat"
+  },
+  "ai_label_spoiler": {
+    "message": "Spoiler"
+  },
+  "ai_label_instruction": {
+    "message": "Unsolicited advice"
+  },
+  "ai_label_pigeon": {
+    "message": "Other-stream topics"
+  },
+  "ai_label_self_promotion": {
+    "message": "Self-promotion"
+  },
+  "ai_label_spam": {
+    "message": "Spam"
+  },
+  "ai_experimental": {
+    "message": "Experimental: the AI filter is designed for Japanese stream comments. Accuracy in other languages has not been evaluated. It can miss harmful comments or hide harmless ones."
+  },
+  "ai_preparing": {
+    "message": "Preparing. Enable the AI filter and open a YouTube/Twitch tab."
+  },
+  "ai_idle": {
+    "message": "Stopped: enable the AI filter and open a YouTube/Twitch tab."
+  },
+  "ai_ready_backend": {
+    "message": "Ready ($1)"
+  },
+  "ai_download": {
+    "message": "Download the model from Hugging Face when missing"
+  },
+  "ai_download_hint": {
+    "message": "Initial download: about 650 MB, cached in your browser. The model host receives connection metadata such as your IP address, but never comment text. Save after changing settings."
+  },
+  "ai_lifecycle": {
+    "message": "Loads only when classification is needed. Closing all target tabs or disabling filtering releases the model from memory; the downloaded model stays cached."
+  },
+  "ai_model_info": {
+    "message": "Saiji-Toxic-v2 / on-device browser inference, up to 128 tokens"
+  },
+  "ai_backend": {
+    "message": "Processing backend"
+  },
+  "ai_backend_auto": {
+    "message": "Automatic (prefer GPU)"
+  },
+  "ai_backend_gpu": {
+    "message": "WebGPU (GPU)"
+  },
+  "ai_backend_cpu": {
+    "message": "WASM (CPU)"
+  },
+  "ai_backend_hint": {
+    "message": "Initial setup needs time and memory. After changing the backend, save and check model readiness."
+  },
+  "ai_preset_benchmark": {
+    "message": "Experimental preset"
+  },
+  "ai_preset_reasons": {
+    "message": "Category preset"
+  },
+  "ai_preset_hint": {
+    "message": "The experimental preset hides comments when any of the first five categories reaches about 0.005039215. False positives and missed harmful comments remain. Save after changes."
+  },
+  "privacy_link": {
+    "message": "Privacy policy"
+  },
+  "platform_label_both": {
+    "message": "All"
+  },
+  "platform_label_youtube_live": {
+    "message": "YouTube Live"
+  },
+  "platform_label_twitch": {
+    "message": "Twitch"
+  },
+  "platform_label_youtube_normal": {
+    "message": "YouTube comments"
+  }
 }

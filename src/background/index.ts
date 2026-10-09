@@ -1,5 +1,5 @@
 import type { Message, NgWord, StatsResponse } from '../shared/types';
-import { judgeToxic, toxicHealth } from './toxic';
+import { judgeToxic, toxicHealth, reconcileToxicLifecycle } from './toxic';
 import { cleanToxicSettings } from '../shared/toxic';
 import {
   ALARM_RESET_COUNTER,
@@ -66,6 +66,15 @@ chrome.webNavigation.onHistoryStateUpdated.addListener(details => {
   }
 });
 
+// Tab/settings events release memory; opening a target does not eagerly load the model.
+const reconcile = () => { void reconcileToxicLifecycle().catch(error => console.warn('[Saiji] classifier lifecycle', error)); };
+chrome.tabs.onRemoved.addListener(reconcile);
+chrome.tabs.onUpdated.addListener((_id, changes) => {
+  if (changes.url !== undefined || changes.discarded !== undefined) reconcile();
+});
+chrome.tabs.onCreated.addListener(reconcile);
+reconcile();
+
 // ── メッセージ受信 ────────────────────────────────────────
 chrome.runtime.onMessage.addListener(
     (msg: Message, _sender, sendResponse) => {
@@ -128,6 +137,11 @@ async function handleMessage(
 // ── storage 変更監視（NGワード変更を CS に伝播）────────────
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'local') return;
+  if (changes['toxicSettings'] || changes['filterEnabled']) {
+    const changedBackend = changes['toxicSettings'] &&
+      changes['toxicSettings'].oldValue?.backend !== changes['toxicSettings'].newValue?.backend;
+    void reconcileToxicLifecycle(Boolean(changedBackend)).catch(error => console.warn('[Saiji] classifier release', error));
+  }
   if (changes['toxicSettings']) {
     broadcastToAllTabs({ type: 'SYNC_TOXIC_SETTINGS', settings: cleanToxicSettings(changes['toxicSettings'].newValue) });
   }

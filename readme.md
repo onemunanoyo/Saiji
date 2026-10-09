@@ -1,3 +1,5 @@
+> Chrome Store用パッケージは `npm run package:store`。申請資料は [store/SUBMISSION.md](store/SUBMISSION.md)。AIは日本語コメント向けの実験機能です。
+
 > AIフィルタの現在の実装はブラウザ内のWebGPU/WASMです。利用手順は [CLASSIFIER.md](CLASSIFIER.md) を参照してください。従来のPythonサーバーはデバッグ用です。
 
 # ローカル分類モデルの最新版

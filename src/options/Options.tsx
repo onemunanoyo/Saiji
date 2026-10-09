@@ -16,10 +16,10 @@ function normalize(str: string): string {
 const PLATFORM_CYCLE: NgWordPlatform[] = ['both', 'youtube_live', 'twitch', 'youtube_normal'];
 
 const PLATFORM_LABEL: Record<NgWordPlatform, string> = {
-  both:           '共通',
-  youtube_live:   'Y生',
-  twitch:         'T',
-  youtube_normal: '通常',
+  both:           'platform_label_both',
+  youtube_live:   'platform_label_youtube_live',
+  twitch:         'platform_label_twitch',
+  youtube_normal: 'platform_label_youtube_normal',
 };
 
 const PLATFORM_STYLE: Record<NgWordPlatform, React.CSSProperties> = {
@@ -107,7 +107,7 @@ export default function Options() {
                       onClick={cyclePlatform}
                       title={t('platform_toggle_title')}
                   >
-                    {PLATFORM_LABEL[platform]}
+                    {t(PLATFORM_LABEL[platform])}
                   </button>
                   <input
                       ref={inputRef}
@@ -137,7 +137,7 @@ export default function Options() {
                           <li key={i} style={s.item}>
                             {/* プラットフォームバッジ */}
                             <span style={{ ...s.badge, ...PLATFORM_STYLE[ng.platform] }}>
-                        {PLATFORM_LABEL[ng.platform]}
+                        {t(PLATFORM_LABEL[ng.platform])}
                       </span>
                             <span style={s.wordText}>{ng.word}</span>
                             <button style={s.delBtn} onClick={() => handleRemoveNg(ng.word, ng.platform)}>{t('delete_button')}</button>

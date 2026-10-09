@@ -1,71 +1,243 @@
 {
-  "ext_name":        { "message": "塞耳 Saiji" },
-  "ext_description": { "message": "YouTube・Twitch のライブチャットから不快なコメントをフィルタリングします" },
-
-  "loading":         { "message": "読み込み中..." },
-  "badge_on":        { "message": "ON" },
-  "badge_off":       { "message": "OFF" },
-
-  "stat_hidden_label": { "message": "非表示" },
-  "stat_hidden_unit":  { "message": "件" },
-  "stat_banned_label": { "message": "追放" },
-  "stat_banned_unit":  { "message": "人" },
-
-  "filter_turn_off":       { "message": "フィルタを OFF にする" },
-  "filter_turn_on":        { "message": "フィルタを ON にする" },
-  "comment_lock_turn_off": { "message": "コメントロック OFF にする" },
-  "comment_lock_turn_on":  { "message": "コメントロック ON にする" },
-  "open_settings":         { "message": "設定・NGワード管理" },
-
-  "options_title": { "message": "塞耳 Saiji — 設定" },
+  "ext_name": {
+    "message": "塞耳 Saiji"
+  },
+  "ext_description": {
+    "message": "YouTube・Twitchのコメントをフィルタリング。日本語コメント向けの実験的なローカルAI判定にも対応。"
+  },
+  "loading": {
+    "message": "読み込み中..."
+  },
+  "badge_on": {
+    "message": "ON"
+  },
+  "badge_off": {
+    "message": "OFF"
+  },
+  "stat_hidden_label": {
+    "message": "非表示"
+  },
+  "stat_hidden_unit": {
+    "message": "件"
+  },
+  "stat_banned_label": {
+    "message": "追放"
+  },
+  "stat_banned_unit": {
+    "message": "人"
+  },
+  "filter_turn_off": {
+    "message": "フィルタを OFF にする"
+  },
+  "filter_turn_on": {
+    "message": "フィルタを ON にする"
+  },
+  "comment_lock_turn_off": {
+    "message": "コメントロック OFF にする"
+  },
+  "comment_lock_turn_on": {
+    "message": "コメントロック ON にする"
+  },
+  "open_settings": {
+    "message": "設定・NGワード管理"
+  },
+  "options_title": {
+    "message": "塞耳 Saiji — 設定"
+  },
   "tab_ngwords": {
     "message": "NGワード ($COUNT$)",
-    "placeholders": { "count": { "content": "$1" } }
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   },
   "tab_blacklist": {
     "message": "追放リスト ($COUNT$)",
-    "placeholders": { "count": { "content": "$1" } }
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   },
-
-  "platform_toggle_title":  { "message": "対象プラットフォームを切り替え" },
-  "ng_input_placeholder":   { "message": "NGワードを入力（Enter で追加）" },
-  "add_button":             { "message": "追加" },
-  "platform_hint_both":     { "message": "すべての配信とYouTube通常コメントに適用されます" },
-  "platform_hint_youtube_live":  { "message": "YouTube の生放送・プレミア公開のみに適用されます" },
-  "platform_hint_twitch":   { "message": "Twitch のみに適用されます" },
-  "platform_hint_youtube_normal": { "message": "YouTube の通常コメント欄のみに適用されます" },
-  "error_empty_word":       { "message": "ワードを入力してください" },
-  "error_duplicate_word":   { "message": "同じワード・同じ対象がすでに登録されています（表記違いを含む）" },
-  "ng_empty":               { "message": "NGワードが登録されていません" },
-  "blacklist_empty":        { "message": "追放されたユーザーはいません" },
-  "remove_button":          { "message": "解除" },
-  "delete_button":          { "message": "削除" },
-  "mute_user":              { "message": "塞耳でユーザーをミュート" },
-
-  "tab_ai": { "message": "AIフィルタ" },
-  "ai_description": { "message": "Saiji-Toxic-v2をブラウザ内のWebGPUまたはWASMで実行します。コメントを外部へ送信せず、Pythonサーバーも不要です。初回のモデル準備には時間がかかります。" },
-  "ai_caveat": { "message": "AIは誤判定する場合があります。判定後に非表示になるため、一瞬表示されることがあります。AI判定は自動追放の回数に加算しません。「差別」は中立的な政治の話題も対象です。「全体」は指示・鳩なども含みます。" },
-  "ai_enable": { "message": "AIフィルタを有効にする" },
-  "ai_threshold_hint": { "message": "チェックした項目がしきい値以上なら非表示。高い値ほど慎重に判定します。初期設定では全体・差別／政治・指示・鳩は対象外です。" },
-  "ai_threshold": { "message": "しきい値" },
-  "ai_save": { "message": "設定を保存" },
-  "ai_check": { "message": "モデル準備を確認" },
-  "ai_saved": { "message": "保存しました。開いているページにも反映されます。" },
-  "ai_ready": { "message": "判定モデルの準備ができました" },
-  "ai_unavailable": { "message": "モデルの準備または判定に失敗しました。CPU（WASM）への切り替えも試してください。" },
-  "ai_permission_denied": { "message": "PC内の判定サーバーへの接続が許可されませんでした。" },
-  "ai_test_hint": { "message": "設定を有効にして保存後、文章を入力して10項目のスコアを確認できます。" },
-  "ai_test_input": { "message": "試しに判定する文章" },
-  "ai_test": { "message": "判定する" },
-  "ai_test_disabled": { "message": "AIフィルタを有効にして保存してください。" },
-  "ai_label_toxicity": { "message": "全体（配信で避けたい話題）" },
-  "ai_label_harassment": { "message": "罵倒・煽り" },
-  "ai_label_obscene": { "message": "性的・わいせつ" },
-  "ai_label_discrimination": { "message": "差別・政治の話題" },
-  "ai_label_threat": { "message": "脅迫" },
-  "ai_label_spoiler": { "message": "ネタバレ" },
-  "ai_label_instruction": { "message": "指示・攻略アドバイス" },
-  "ai_label_pigeon": { "message": "鳩（他の配信者の話題）" },
-  "ai_label_self_promotion": { "message": "宣伝・誘導" },
-  "ai_label_spam": { "message": "スパム" }
+  "platform_toggle_title": {
+    "message": "対象プラットフォームを切り替え"
+  },
+  "ng_input_placeholder": {
+    "message": "NGワードを入力（Enter で追加）"
+  },
+  "add_button": {
+    "message": "追加"
+  },
+  "platform_hint_both": {
+    "message": "すべての配信とYouTube通常コメントに適用されます"
+  },
+  "platform_hint_youtube_live": {
+    "message": "YouTube の生放送・プレミア公開のみに適用されます"
+  },
+  "platform_hint_twitch": {
+    "message": "Twitch のみに適用されます"
+  },
+  "platform_hint_youtube_normal": {
+    "message": "YouTube の通常コメント欄のみに適用されます"
+  },
+  "error_empty_word": {
+    "message": "ワードを入力してください"
+  },
+  "error_duplicate_word": {
+    "message": "同じワード・同じ対象がすでに登録されています（表記違いを含む）"
+  },
+  "ng_empty": {
+    "message": "NGワードが登録されていません"
+  },
+  "blacklist_empty": {
+    "message": "追放されたユーザーはいません"
+  },
+  "remove_button": {
+    "message": "解除"
+  },
+  "delete_button": {
+    "message": "削除"
+  },
+  "mute_user": {
+    "message": "塞耳でユーザーをミュート"
+  },
+  "tab_ai": {
+    "message": "AIフィルタ"
+  },
+  "ai_description": {
+    "message": "Saiji-Toxic-v2をブラウザ内のWebGPUまたはWASMで実行します。コメントを外部へ送信せず、Pythonサーバーも不要です。初回のモデル準備には時間がかかります。"
+  },
+  "ai_caveat": {
+    "message": "AIは誤判定する場合があります。判定後に非表示になるため、一瞬表示されることがあります。AI判定は自動追放の回数に加算しません。「差別」は中立的な政治の話題も対象です。「全体」は指示・鳩なども含みます。"
+  },
+  "ai_enable": {
+    "message": "AIフィルタを有効にする"
+  },
+  "ai_threshold_hint": {
+    "message": "選択した分類がしきい値以上なら非表示にします。しきい値を上げると非表示が減ります。"
+  },
+  "ai_threshold": {
+    "message": "しきい値"
+  },
+  "ai_save": {
+    "message": "設定を保存"
+  },
+  "ai_check": {
+    "message": "モデル準備を確認"
+  },
+  "ai_saved": {
+    "message": "保存しました。開いているページにも反映されます。"
+  },
+  "ai_ready": {
+    "message": "判定モデルの準備ができました"
+  },
+  "ai_unavailable": {
+    "message": "モデルの準備または判定に失敗しました。CPU（WASM）への切り替えも試してください。"
+  },
+  "ai_test_hint": {
+    "message": "設定を有効にして保存後、文章を入力して10項目のスコアを確認できます。"
+  },
+  "ai_test_input": {
+    "message": "試しに判定する文章"
+  },
+  "ai_test": {
+    "message": "判定する"
+  },
+  "ai_test_disabled": {
+    "message": "AIフィルタを有効にして保存してください。"
+  },
+  "ai_label_toxicity": {
+    "message": "全体（配信で避けたい話題）"
+  },
+  "ai_label_harassment": {
+    "message": "罵倒・煽り"
+  },
+  "ai_label_obscene": {
+    "message": "性的・わいせつ"
+  },
+  "ai_label_discrimination": {
+    "message": "差別・政治の話題"
+  },
+  "ai_label_threat": {
+    "message": "脅迫"
+  },
+  "ai_label_spoiler": {
+    "message": "ネタバレ"
+  },
+  "ai_label_instruction": {
+    "message": "指示・攻略アドバイス"
+  },
+  "ai_label_pigeon": {
+    "message": "鳩（他の配信者の話題）"
+  },
+  "ai_label_self_promotion": {
+    "message": "宣伝・誘導"
+  },
+  "ai_label_spam": {
+    "message": "スパム"
+  },
+  "ai_experimental": {
+    "message": "実験機能：AIフィルタは日本語の配信コメント向けです。他言語での精度は検証していません。誤検出・見逃しがあり、完全な有害判定を保証しません。"
+  },
+  "ai_preparing": {
+    "message": "準備中です。AIフィルタを有効にし、YouTube/Twitchのタブを開いてください。"
+  },
+  "ai_idle": {
+    "message": "停止中：AIフィルタを有効にし、YouTube/Twitchのタブを開いてください。"
+  },
+  "ai_ready_backend": {
+    "message": "準備完了（$1）"
+  },
+  "ai_download": {
+    "message": "モデルがない場合はHugging Faceから取得する"
+  },
+  "ai_download_hint": {
+    "message": "初回約650MB。ブラウザ内に保存して再利用します。モデル提供元にIPなどの通信情報が届きますが、コメント本文は送信しません。変更後は保存してください。"
+  },
+  "ai_lifecycle": {
+    "message": "判定が必要なときだけ起動します。対象タブをすべて閉じるかフィルタを切るとモデルを解放します。保存済みモデルは残ります。"
+  },
+  "ai_model_info": {
+    "message": "Saiji-Toxic-v2 / ブラウザ内推論・最大128トークン"
+  },
+  "ai_backend": {
+    "message": "処理方式"
+  },
+  "ai_backend_auto": {
+    "message": "自動（GPU優先）"
+  },
+  "ai_backend_gpu": {
+    "message": "WebGPU（GPU）"
+  },
+  "ai_backend_cpu": {
+    "message": "WASM（CPU）"
+  },
+  "ai_backend_hint": {
+    "message": "初回準備には時間とメモリが必要です。処理方式の変更後は保存して準備確認してください。"
+  },
+  "ai_preset_benchmark": {
+    "message": "実験用の設定"
+  },
+  "ai_preset_reasons": {
+    "message": "理由別の設定"
+  },
+  "ai_preset_hint": {
+    "message": "実験用の設定は先頭5分類のどれかが約0.005039215以上で非表示にします。誤検出・見逃しが残ります。変更後は保存してください。"
+  },
+  "privacy_link": {
+    "message": "プライバシーについて"
+  },
+  "platform_label_both": {
+    "message": "共通"
+  },
+  "platform_label_youtube_live": {
+    "message": "YouTubeライブ"
+  },
+  "platform_label_twitch": {
+    "message": "Twitch"
+  },
+  "platform_label_youtube_normal": {
+    "message": "通常コメント"
+  }
 }

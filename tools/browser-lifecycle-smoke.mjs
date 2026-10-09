@@ -1,0 +1,35 @@
+import { chromium } from 'playwright';
+import { writeFile } from 'node:fs/promises';
+const browser = await chromium.connectOverCDP('http://127.0.0.1:9227');
+try {
+ const context=browser.contexts()[0];
+ const worker=context.serviceWorkers().find(w=>w.url().endsWith('/background/index.js'));
+ const id=process.argv[2] ?? worker?.url().split('/')[2];
+ if (!id) throw Error('Pass extension ID');
+ const options=await context.newPage();await options.goto(`chrome-extension://${id}/options.html`);
+ const settings={enabled:true,backend:'webgpu',downloadMissingModel:true,thresholds:{toxicity:0.005039215087890625}};
+ await options.evaluate(settings=>chrome.storage.local.set({toxicSettings:settings,filterEnabled:true}),settings);
+ const hasHost=()=>options.evaluate(async()=>(await chrome.runtime.getContexts({contextTypes:['OFFSCREEN_DOCUMENT']})).length>0);
+ const health=()=>options.evaluate(()=>chrome.runtime.sendMessage({type:'TOXIC_HEALTH'}));
+ const waitReleased=()=>options.waitForFunction(async()=>(await chrome.runtime.getContexts({contextTypes:['OFFSCREEN_DOCUMENT']})).length===0,{},{timeout:15000});
+ const record={};
+ record.noTarget=await health();if(record.noTarget.error!=='idle'||await hasHost())throw Error('Unexpected startup');
+ await context.route('https://www.youtube.com/**',route=>route.fulfill({contentType:'text/html',body:'<html><body>Isolated lifecycle test</body></html>'}));
+ const first=await context.newPage();await first.goto('https://www.youtube.com/watch?v=saiji-lifecycle-1');
+ const second=await context.newPage();await second.goto('https://www.youtube.com/watch?v=saiji-lifecycle-2');
+ if(await hasHost())throw Error('Target opening must be lazy');
+ record.ready=await health();if(!record.ready.ok)throw Error(JSON.stringify(record.ready));
+ const judged=await options.evaluate(()=>chrome.runtime.sendMessage({type:'JUDGE_TOXIC',text:'配信ありがとう！'}));if(!judged.ok)throw Error('Inference failed');
+ await first.close();if(!await hasHost())throw Error('Released while another target remained');
+ await second.close();await waitReleased();record.lastTabReleased=true;
+ const target=await context.newPage();await target.goto('https://www.youtube.com/watch?v=saiji-lifecycle-3');
+ record.restarted=await health();if(!record.restarted.ok)throw Error('Reload failed');
+ await options.evaluate(settings=>chrome.storage.local.set({toxicSettings:{...settings,enabled:false}}),settings);
+ await waitReleased();record.aiDisabledReleased=true;
+ await options.evaluate(settings=>chrome.storage.local.set({toxicSettings:settings}),settings);
+ if(!(await health()).ok)throw Error('Second reload failed');
+ await options.evaluate(()=>chrome.storage.local.set({filterEnabled:false}));await waitReleased();record.filterDisabledReleased=true;
+ await options.evaluate(()=>chrome.storage.local.set({filterEnabled:true}));if(!(await health()).ok)throw Error('Third reload failed');
+ await target.goto('about:blank');await waitReleased();record.navigatedAwayReleased=true;
+ await writeFile('logs/browser-lifecycle-smoke.json',JSON.stringify(record,null,2));console.log(record);
+} finally {const session=await browser.newBrowserCDPSession();await session.send('Browser.close').catch(()=>{});}

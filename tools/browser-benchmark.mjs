@@ -6,6 +6,10 @@ const rows = (await readFile(source, 'utf8')).trim().split('\n').map(JSON.parse)
 const browser = await chromium.connectOverCDP('http://127.0.0.1:9227');
 try {
   const context = browser.contexts()[0];
+  await context.route('https://www.youtube.com/**', route => route.fulfill({ contentType: 'text/html', body: '<html><body>Saiji isolated test</body></html>' }));
+  const targetPage = await context.newPage();
+  await targetPage.goto('https://www.youtube.com/watch?v=saiji-isolated-test');
+
   const worker = context.serviceWorkers().find(w => w.url().endsWith('/background/index.js'));
   const extensionPage = context.pages().find(p => p.url().endsWith('/options.html'));
   const id = (worker?.url() ?? extensionPage?.url())?.split('/')[2];

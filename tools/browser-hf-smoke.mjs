@@ -3,6 +3,10 @@ import { writeFile } from 'node:fs/promises';
 const browser = await chromium.connectOverCDP('http://127.0.0.1:9227');
 try {
  const context = browser.contexts()[0];
+  await context.route('https://www.youtube.com/**', route => route.fulfill({ contentType: 'text/html', body: '<html><body>Saiji isolated test</body></html>' }));
+  const targetPage = await context.newPage();
+  await targetPage.goto('https://www.youtube.com/watch?v=saiji-isolated-test');
+
  let worker=context.serviceWorkers().find(w=>w.url().endsWith('/background/index.js'));
  const id=process.argv[2] ?? worker?.url().split('/')[2];
  if (!id) throw Error('Pass the unpacked extension ID as the first argument.'); let page=await context.newPage();

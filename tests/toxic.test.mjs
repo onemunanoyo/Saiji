@@ -8,6 +8,7 @@ async function load(path) {
 }
 const policy = await load('src/shared/toxic.ts');
 const content = await load('src/content/toxic.ts');
+const ruleFilter = await load('src/content/filter.ts');
 const background = await load('src/background/toxic.ts');
 const zero = () => Object.fromEntries(policy.TOXIC_LABELS.map(label => [label, 0]));
 
@@ -112,6 +113,7 @@ test('reused AI-hidden DOM nodes are restored before classifying new text', asyn
 function mockBackground(enabled, sendMessage) {
   globalThis.chrome = {
     storage: { local: { get: async () => ({ toxicSettings: { enabled, backend: 'wasm', thresholds: {} } }) } },
+    tabs: { query: async () => [{ url: 'https://www.youtube.com/watch?v=test' }] },
     offscreen: { hasDocument: async () => true },
     runtime: { sendMessage },
   };
@@ -145,4 +147,77 @@ test('background bounds pending inference requests to 32', async () => {
   assert.equal((await background.judgeToxic('overflow')).error, 'busy');
   releases.forEach(release => release());
   assert.ok((await Promise.all(pending)).every(result => result.ok));
+});
+
+test('target matching accepts YouTube/Twitch but rejects lookalike hosts', () => {
+  assert.equal(background.isToxicTarget('https://www.youtube.com/watch?v=x'), true);
+  assert.equal(background.isToxicTarget('https://m.twitch.tv/channel'), true);
+  assert.equal(background.isToxicTarget('https://youtube.com.evil.example/'), false);
+  assert.equal(background.isToxicTarget('https://example.com/?youtube.com'), false);
+});
+test('no target or disabled global filter prevents model creation', async () => {
+  mockBackground(true, () => assert.fail('must not create inference request'));
+  chrome.tabs.query = async () => [];
+  assert.equal((await background.toxicHealth()).error, 'idle');
+  assert.equal((await background.judgeToxic('idle comment')).error, 'idle');
+  chrome.tabs.query = async () => [{ url: 'https://twitch.tv/channel', discarded: true }];
+  assert.equal((await background.toxicHealth()).error, 'idle');
+  chrome.tabs.query = async () => [{ url: 'https://youtube.com/watch?v=x' }];
+  chrome.storage.local.get = async () => ({ toxicSettings: { enabled: true }, filterEnabled: false });
+  assert.equal((await background.toxicHealth()).error, 'idle');
+});
+test('last target removal releases worker and host but leaves persistent model cache untouched', async () => {
+  let disposals=0,closed=0;
+  mockBackground(true, async message => { assert.equal(message.action, 'dispose'); disposals++;return {ok:true}; });
+  chrome.offscreen.closeDocument=async()=>{closed++;};
+  await background.reconcileToxicLifecycle();
+  assert.equal(closed,0);
+  chrome.tabs.query=async()=>[];
+  await background.reconcileToxicLifecycle();
+  assert.equal(disposals,1);assert.equal(closed,1);
+});
+test('disabled AI releases model even with a target tab still open', async () => {
+  let closed=0;
+  mockBackground(false,async()=>({ok:true}));
+  chrome.offscreen.closeDocument=async()=>{closed++;};
+  await background.reconcileToxicLifecycle();
+  assert.equal(closed,1);
+});
+
+test('rule-hidden comments never reach inference, including repeated DOM processing', async () => {
+  content.invalidateToxic();
+  globalThis.document={querySelector:()=>null};globalThis.location={hostname:'youtube.com'};
+  globalThis.chrome={runtime:{sendMessage:()=>assert.fail('rule-hidden text sent to classifier')}};
+  const s=state();s.ngWords=[{word:'blocked',platform:'both'}];
+  const node=element('blocked comment');
+  assert.equal(ruleFilter.processElement(node,'youtube',s,()=>{}).removed,true);
+  content.checkToxic(node,'youtube',s,()=>assert.fail('AI counted a rule removal'));
+  content.checkToxic(node,'youtube',s,()=>assert.fail('AI counted a repeated rule removal'));
+  await tick();assert.equal(node.style.getPropertyValue('display'),'none');
+});
+test('comments hidden by a parent thread never reach inference', async () => {
+  content.invalidateToxic();
+  globalThis.chrome={runtime:{sendMessage:()=>assert.fail('hidden child sent to classifier')}};
+  const parent=element();parent.style.setProperty('display','none','important');
+  const child=element('child comment');child.parentElement=parent;
+  content.checkToxic(child,'youtube',state(),()=>assert.fail('hidden child counted'));
+  await tick();
+});
+test('visible comments surviving rules still reach inference', async () => {
+  content.invalidateToxic();
+  globalThis.document={querySelector:()=>null};globalThis.location={hostname:'youtube.com'};
+  let calls=0;globalThis.chrome={runtime:{sendMessage:async()=>{calls++;return {ok:true,scores:zero()};}}};
+  const s=state();s.ngWords=[{word:'blocked',platform:'both'}];const node=element('ordinary comment');
+  assert.equal(ruleFilter.processElement(node,'youtube',s,()=>{}).removed,false);
+  content.checkToxic(node,'youtube',s,()=>assert.fail('safe comment hidden'));await tick();
+  assert.equal(calls,1);assert.equal(node.style.getPropertyValue('display'),'');
+});
+test('a parent hidden while inference is pending prevents an AI hide or count', async () => {
+  content.invalidateToxic();let resolve;
+  globalThis.chrome={runtime:{sendMessage:()=>new Promise(r=>{resolve=r;})}};
+  const parent=element();const child=element();child.parentElement=parent;let counted=0;
+  content.checkToxic(child,'youtube',state(),()=>counted++);
+  parent.style.setProperty('display','none','important');
+  resolve({ok:true,scores:{...zero(),threat:1}});await tick();
+  assert.equal(counted,0);assert.equal(child.dataset.saijiToxic,undefined);
 });

@@ -38,11 +38,11 @@ export default function ToxicOptions() {
 
   async function health() {
     setBusy(true);
-    setStatus('準備中です。未配置のモデルはHFから取得します（初回約650MB）。');
+    setStatus(t('ai_preparing'));
     try {
 
       const response = await chrome.runtime.sendMessage({ type: 'TOXIC_HEALTH' } satisfies Message);
-      setStatus(response?.ok ? `準備完了（${response.backend}）` : `準備できません：${response?.error ?? '不明なエラー'}`);
+      setStatus(response?.ok ? t('ai_ready_backend', response.backend) : t(response?.error === 'idle' ? 'ai_idle' : 'ai_unavailable'));
     } catch { setStatus(t('ai_unavailable')); }
     finally { setBusy(false); }
   }
@@ -58,6 +58,7 @@ export default function ToxicOptions() {
 
   if (!loaded) return <p>{t('loading')}</p>;
   return <section>
+    <p role="note" style={{ padding: 12, background: '#FFF7ED', lineHeight: 1.7 }}>{t('ai_experimental')}</p>
     <p style={{ fontSize: 13, lineHeight: 1.7 }}>{t('ai_description')}</p>
     <p style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.7 }}>{t('ai_caveat')}</p>
     <label><input type="checkbox" checked={settings.enabled}
@@ -66,17 +67,18 @@ export default function ToxicOptions() {
     <label style={{ display: 'block', margin: '12px 0' }}><input type="checkbox"
       checked={settings.downloadMissingModel !== false}
       onChange={e => setSettings({ ...settings, downloadMissingModel: e.target.checked })} />
-      モデルがない場合はHugging Faceから取得する
+      {t('ai_download')}
     </label>
-    <p style={{ fontSize: 12 }}>初回約650MB。取得後はブラウザ内に保存し、次回はキャッシュを使います。コメントは送信しません。変更後に保存してください。</p>
-    <p>Saiji-Toxic-v2 / ブラウザ内推論・最大128トークン</p>
-    <label>処理方式 <select value={settings.backend ?? 'auto'} onChange={e => setSettings({ ...settings, backend: e.target.value as 'auto' | 'webgpu' | 'wasm' })}>
-      <option value="auto">自動（GPU優先）</option><option value="webgpu">WebGPU（GPU）</option><option value="wasm">WASM（CPU）</option>
+    <p style={{ fontSize: 12 }}>{t('ai_download_hint')}</p>
+    <p style={{ fontSize: 12 }}>{t('ai_lifecycle')}</p>
+    <p>{t('ai_model_info')}</p>
+    <label>{t('ai_backend')} <select value={settings.backend ?? 'auto'} onChange={e => setSettings({ ...settings, backend: e.target.value as 'auto' | 'webgpu' | 'wasm' })}>
+      <option value="auto">{t('ai_backend_auto')}</option><option value="webgpu">{t('ai_backend_gpu')}</option><option value="wasm">{t('ai_backend_cpu')}</option>
     </select></label>
-    <p style={{ fontSize: 12 }}>初回のモデル読み込みには時間がかかります。本文は外部送信されません。処理方式を変更したら保存して準備確認してください。</p>
-    <button onClick={() => { setSettings({ ...settings, thresholds: structuredClone(DEFAULT_TOXIC_SETTINGS.thresholds) }); setStatus(''); }}>1,000件ベンチの設定</button>
-    <button onClick={() => { setSettings({ ...settings, thresholds: { ...README_THRESHOLDS } }); setStatus(''); }}>理由別の設定</button>
-    <p style={{ fontSize: 12 }}>ベンチ設定は先頭5ラベルの最大値 ≥ 0.005039215で非表示。実験用の閾値で、見逃しが残ります。変更後は保存してください。</p>
+    <p style={{ fontSize: 12 }}>{t('ai_backend_hint')}</p>
+    <button onClick={() => { setSettings({ ...settings, thresholds: structuredClone(DEFAULT_TOXIC_SETTINGS.thresholds) }); setStatus(''); }}>{t('ai_preset_benchmark')}</button>
+    <button onClick={() => { setSettings({ ...settings, thresholds: { ...README_THRESHOLDS } }); setStatus(''); }}>{t('ai_preset_reasons')}</button>
+    <p style={{ fontSize: 12 }}>{t('ai_preset_hint')}</p>
     {TOXIC_LABELS.map(label => <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '10px 0' }}>
       <label style={{ flex: 1 }}><input type="checkbox" checked={settings.thresholds[label] !== undefined}
           onChange={e => setThreshold(label, e.target.checked ? DEFAULT_TOXIC_SETTINGS.thresholds[label] ?? 0.7 : undefined)} /> {t(`ai_label_${label}`)}</label>
@@ -89,6 +91,7 @@ export default function ToxicOptions() {
       <button disabled={busy} onClick={() => void health()}>{t('ai_check')}</button>
     </div>
     <p role="status">{status}</p>
+    <p><a href="privacy.html" target="_blank" rel="noreferrer">{t('privacy_link')}</a></p>
     <hr />
     <p style={{ fontSize: 12 }}>{t('ai_test_hint')}</p>
     <textarea aria-label={t('ai_test_input')} value={text} maxLength={2000} rows={3}
