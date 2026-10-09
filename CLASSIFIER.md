@@ -38,7 +38,7 @@ Pythonの起動・停止スクリプトとserver.pyは比較・デバッグ用�
 
 ## 配布について
 
-`npm run package:store` でモデルを含まない本番ビルドを `release/extension` に作成し、`release/Saiji-1.0.0-store.zip` を生成します。JavaScriptと必要なWASM/MJSランタイム、ライセンス、プライバシー説明を同梱します。モデルは初回にHFから取得します。通常の `npm run build` はローカルモデル同梱のdistを生成します。
+`npm run package:store` でモデルを含まない本番ビルドを `release/extension` に作成し、`release/Saiji-1.1.0-store.zip` を生成します。JavaScriptと必要なWASM/MJSランタイム、ライセンス、プライバシー説明を同梱します。モデルは初回にHFから取得します。通常の `npm run build` はローカルモデル同梱のdistを生成します。
 
 日本語・英語・韓国語の表示に対応し、他のUI言語では英語にフォールバックします。AIは日本語コメント向けの実験機能であり、UIの多言語化は分類モデルの多言語対応を意味しません。
 

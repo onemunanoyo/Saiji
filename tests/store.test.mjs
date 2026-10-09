@@ -25,10 +25,12 @@ test('AI options use localized strings and the default fallback is English', asy
 });
 test('Store ZIP contains the runtime and privacy notice without model or development assets', async t => {
   let bytes;
-  try { bytes = await readFile('release/Saiji-1.0.0-store.zip'); }
+  const manifest = await json('public/manifest.json');
+  try { bytes = await readFile(`release/Saiji-${manifest.version}-store.zip`); }
   catch { t.skip('Run npm run package:store to verify ZIP');return; }
   const files=unzipSync(bytes);
   assert.ok(files['manifest.json']);assert.ok(files['privacy.html']);
+  assert.equal(JSON.parse(new TextDecoder().decode(files['manifest.json'])).version, manifest.version);
   assert.ok(files['runtime/ort-wasm-simd-threaded.jsep.wasm']);
   assert.ok(files['runtime/ort-wasm-simd-threaded.jsep.mjs']);
   assert.ok(files['runtime/ort-wasm-simd-threaded.asyncify.mjs']);
