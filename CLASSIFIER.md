@@ -22,19 +22,22 @@ HF `j-llm/Saiji-toxic_v2` のrevision `88e9f6476ad2a5954f26cf1f10c1453b6664e1ff`
 
 ## 開発環境で再生成
 
-```powershell
-./setup-classifier.ps1 -Backend cpu
-./.venv-classifier/Scripts/python.exe -m pip install onnx
-./.venv-classifier/Scripts/python.exe tools/export_browser_model.py
+通常利用ではモデルの再生成は不要です。HFからブラウザ用ONNXを取得できます。
+
+開発者が再変換する場合は、別途用意したPython環境にPyTorch・Transformers・huggingface_hub・onnxをインストールし、次を実行します。
+
+```sh
+python local-toxic/download_model.py
+python tools/export_browser_model.py
 npm ci
 npm run typecheck
 npm test
 npm run build
 ```
 
-setupスクリプトがHFモデルを `models/Saiji-Toxic-v2` に用意し、exportが `models/browser` にONNXとtokenizerを作成します。ビルド時にdistへコピーします。モデルがない環境でもソースのビルドはできます。AI推論の初回準備時にHFから検証済みONNXを取得するため、利用者によるモデル変換は不要です。モデル・環境・収集データはGitに含めません。
+ダウンロードツールはHFモデルを `models/Saiji-Toxic-v2` に用意し、exportが `models/browser` にONNXとtokenizerを作成します。再変換時は取得したリビジョンと出力を検証してください。モデル・環境・収集データはGitに含めません。
 
-Pythonの起動・停止スクリプトとserver.pyは比較・デバッグ用として残しています。拡張機能はlocalhost判定サーバーへ接続しません。
+旧Pythonサーバーは `local-toxic/` 内の比較・デバッグ用です。ルートのPython環境セットアップ・起動・停止スクリプトは削除しています。拡張機能はlocalhost判定サーバーへ接続しません。
 
 ## 配布について
 
