@@ -58,7 +58,7 @@ async function copyPublic() {
   }
   if (store) { console.log('[saiji] Store build: model is downloaded from HF on demand.'); return; }
   try { await access('models/browser/model.onnx'); }
-  catch { console.warn('[saiji] Browser model is absent. Run tools/export_browser_model.py before using AI inference.'); return; }
+  catch { console.warn('[saiji] Browser model is absent. AI inference can download the verified model from Hugging Face when enabled.'); return; }
   await cp('models/browser', output + '/model', { recursive: true });
   console.log('[saiji] public/ → dist/ コピー完了');
 }
