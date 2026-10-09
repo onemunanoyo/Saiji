@@ -20,7 +20,7 @@ YouTube・Twitchのコメントを、自分の画面で非表示にするChrome�
 
 ### Chrome Web Store 
 
-https://chromewebstore.google.com/detail/%E5%A1%9E%E8%80%B3-saiji/onimoeehiofocnalanlkchmjddbeleid?hl=ja|
+https://chromewebstore.google.com/detail/%E5%A1%9E%E8%80%B3-saiji/onimoeehiofocnalanlkchmjddbeleid?hl=ja
 
 
 ソースから利用する場合は、Node.jsとnpmを用意して次を実行します。
@@ -63,7 +63,7 @@ NGワード・追放リストで非表示にしたコメントと、非表示の
 
 モデルは必要時にロードします。対象タブがなくなった場合、またはAI・全体フィルターを無効にした場合はWorkerとoffscreen documentを終了します。保存済みのモデルキャッシュは維持します。ロード中・推論中はモデルに加えて作業領域のメモリも使用し、OS上の使用量が直ちにゼロになることは保証しません。
 
-既定のベンチマーク用プリセットは、先頭5ラベル（toxicity / harassment / obscene / discrimination / threat）の最大スコアが `0.005039215087890625` 以上なら非表示にします。この値は有害確率を保証するものではなく、利用方針に応じてラベルとしきい値を調整してください。モデル・評価条件・再生成方法は [CLASSIFIER.md](CLASSIFIER.md) に記載しています。
+既定のベンチマーク用プリセットは、先頭5ラベル（toxicity / harassment / obscene / discrimination / threat）の最大スコアが `0.005039215087890625` 以上なら非表示にします。この値は有害確率を保証するものではなく、利用方針に応じてラベルとしきい値を調整してください。モデル・評価条件・ビルド方法は [CLASSIFIER.md](CLASSIFIER.md) に記載しています。
 
 ## データと通信
 
@@ -104,10 +104,10 @@ Store用の出力は `release/extension/`、提出用ZIPは `release/Saiji-1.1.0
 | `src/options/`・`src/popup/` | 設定画面とポップアップ |
 | `public/` | Manifest、翻訳、HTML、アイコン |
 | `tests/` | 自動テスト |
-| `tools/` | モデル変換・パッケージ化・ブラウザ検証 |
+| `tools/` | パッケージ化・ブラウザ検証 |
 | `store/` | Store掲載文と申請資料 |
 
-旧Pythonサーバー関連のファイルは比較・デバッグ用です。現在の拡張機能はlocalhost判定サーバーに接続しません。
+ビルドと通常利用にPythonは不要です。拡張機能はlocalhost判定サーバーに接続しません。
 
 ## ライセンス
 

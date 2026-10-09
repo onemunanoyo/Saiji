@@ -10,7 +10,7 @@ Chrome/Edgeの拡張機能ページで開発者モードを有効にし、この
 - WebGPU: GPUを指定します。利用できなければエラーを表示します。
 - CPU（WASM）: CPUだけで実行します。
 
-Chrome 120以降を対象にしています。Apple Siliconでも同じWebGPU/WASM構成ですが、Mac実機は未検証です。CPU版は混雑したチャットでは処理が追いつかない場合があります。待機中の判定は最大32件とし、超過・エラー時のコメントは表示を維持します。AI判定でユーザーBANは行いません。
+Chrome 120以降を対象にしています。Apple Siliconでも同じWebGPU/WASM構成で、M5では利用者による動作報告があります。Macでの定量的な性能・メモリ測定は未実施です。CPU版は混雑したチャットでは処理が追いつかない場合があります。待機中の判定は最大32件とし、超過・エラー時のコメントは表示を維持します。AI判定でユーザーBANは行いません。
 
 ## モデルと判定条件
 
@@ -20,24 +20,18 @@ HF `j-llm/Saiji-toxic_v2` のrevision `88e9f6476ad2a5954f26cf1f10c1453b6664e1ff`
 
 ブラウザ版の1,000件WebGPU再評価では、元のCUDA FP16版との判定差は0件でした（TP9、FP59、FN9）。中央値15.4ms、95パーセンタイル17.3ms／件。少数例でのWASMは約0.6秒／件でした。計測はWindowsの隔離したheadless EdgeでWebGPUテスト用フラグを使用しています。通常のChrome UIでのライブ配信動作とMac実機の性能を保証する結果ではありません。別の入力ではFP32/FP16の丸め差で閾値近辺の判定が変わる可能性があります。
 
-## 開発環境で再生成
+## 開発環境でビルド
 
-通常利用ではモデルの再生成は不要です。HFからブラウザ用ONNXを取得できます。
-
-開発者が再変換する場合は、別途用意したPython環境にPyTorch・Transformers・huggingface_hub・onnxをインストールし、次を実行します。
+公開済みのブラウザ用ONNXを利用するため、Python環境やモデル変換は不要です。
 
 ```sh
-python local-toxic/download_model.py
-python tools/export_browser_model.py
 npm ci
 npm run typecheck
 npm test
 npm run build
 ```
 
-ダウンロードツールはHFモデルを `models/Saiji-Toxic-v2` に用意し、exportが `models/browser` にONNXとtokenizerを作成します。再変換時は取得したリビジョンと出力を検証してください。モデル・環境・収集データはGitに含めません。
-
-旧Pythonサーバーは `local-toxic/` 内の比較・デバッグ用です。ルートのPython環境セットアップ・起動・停止スクリプトは削除しています。拡張機能はlocalhost判定サーバーへ接続しません。
+モデル未配置でもビルドでき、利用時にHFから検証済みモデルを取得できます。モデル・環境・収集データはGitに含めません。
 
 ## 配布について
 

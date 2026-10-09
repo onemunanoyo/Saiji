@@ -30,6 +30,6 @@ Add accurate screenshots (1280×800 or 640×400) and required dashboard artwork;
 
 Licenses: Saiji source MIT; downloaded model Apache-2.0; bundled dependencies have their own notices. See LICENSE.txt, THIRD_PARTY_NOTICES.txt and licenses/ in the package.
 
-The existing GitHub repository returned 404 to anonymous requests during preparation. Do not use a private GitHub policy/support URL for the Store. Host PRIVACY.md publicly and select a publicly reachable support/contact destination before submission. The current maintainer support URL in the policy is a draft and must be confirmed/replaced if inaccessible to users.
+Public policy location: https://github.com/onemunanoyo/saiji-privacy-policy/blob/main/PRIVACY_POLICY.md . Keep its published text consistent with PRIVACY.md and the submitted extension version. Confirm that policy and support links remain publicly accessible before submission.
 
 Validation: 22 tests and typecheck passed. The production model-free package loaded in isolated headless Edge (WebGPU test flag), downloaded the model from HF, classified a Japanese comment, and released its offscreen host after the last target tab closed. Native English UI and Japanese/Korean message fixtures rendered their notices. Screenshots are in release/screenshot-*-1280x800.png. Browser review evidence is logs/store-browser-receipt.json (not shipped). Ordinary Chrome and M5 acceptance should be checked before submitting. The maintainer will manually handle public policy hosting and dashboard contact fields.
