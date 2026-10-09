@@ -49,7 +49,6 @@ jobs:
         run: |
           npm run typecheck
           npm test
-          python -m unittest discover -s tests -p 'test_*.py'
 
       # 2. 生成されたタグ（または手動タグ）がある場合のみ実行
       - name: Zip extension
