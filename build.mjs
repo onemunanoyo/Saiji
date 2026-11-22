@@ -1,5 +1,12 @@
 import * as esbuild from 'esbuild';
 import { cp, mkdir, readdir, access, rm, readFile, writeFile } from 'fs/promises';
+import { dirname, resolve } from 'node:path';
+import {
+  assertInside,
+  assertNoSymlinkComponents,
+  assertNoSymlinksRecursive,
+  assertNotSymlink,
+} from './tools/safe-path.mjs';
 
 const watch = process.argv.includes('--watch');
 const store = process.argv.includes('--store');
@@ -27,13 +34,30 @@ const entryPoints = [
 ];
 
 async function copyPublic() {
+  const outputPath = resolve(output);
+  const releasePath = resolve('release');
+
   if (store) {
     // Fixed generated output under this repository; never delete dist or source assets.
-    const { resolve, dirname } = await import('node:path');
     const target = resolve(output);
-    if (dirname(target) !== resolve('release') || target !== resolve('release/extension')) throw Error('Unsafe output path');
+    assertInside(releasePath, target, 'Store output');
+    if (dirname(target) !== releasePath || target !== resolve(releasePath, 'extension')) throw Error('Unsafe output path');
+    // resolve() is lexical: reject a symlink anywhere between release and the target.
+    await assertNoSymlinkComponents(releasePath, 'release');
+    await assertNoSymlinkComponents(target, 'Store output');
+    await assertNoSymlinksRecursive(target, 'Store output');
     await rm(target, { recursive: true, force: true });
   }
+
+  // A symlinked dist/release/extension or a stale symlink below it would redirect
+  // writeFile/cp/esbuild outside the repository. Refuse before writing anything.
+  await assertNoSymlinkComponents(outputPath, 'output');
+  await assertNoSymlinksRecursive(outputPath, 'output');
+  for (const input of ['public', 'third_party']) {
+    await assertNoSymlinksRecursive(input, input);
+  }
+  await assertNotSymlink('LICENSE', 'LICENSE');
+
   await cp('public', output, { recursive: true });
   await cp('LICENSE', output + '/LICENSE.txt');
   await cp('third_party', output + '/licenses', { recursive: true });
@@ -59,6 +83,7 @@ async function copyPublic() {
   if (store) { console.log('[saiji] Store build: model is downloaded from HF on demand.'); return; }
   try { await access('models/browser/model.onnx'); }
   catch { console.warn('[saiji] Browser model is absent. AI inference can download the verified model from Hugging Face when enabled.'); return; }
+  await assertNoSymlinksRecursive('models/browser', 'models/browser');
   await cp('models/browser', output + '/model', { recursive: true });
   console.log('[saiji] public/ → dist/ コピー完了');
 }
