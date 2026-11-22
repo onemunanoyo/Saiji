@@ -25,7 +25,7 @@ HF `j-llm/Saiji-toxic_v2` のrevision `88e9f6476ad2a5954f26cf1f10c1453b6664e1ff`
 公開済みのブラウザ用ONNXを利用するため、Python環境やモデル変換は不要です。
 
 ```sh
-npm ci
+npm run ci:safe
 npm run typecheck
 npm test
 npm run build
