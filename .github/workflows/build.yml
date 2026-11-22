@@ -50,6 +50,13 @@ jobs:
           npm run typecheck
           npm test
 
+      - name: Reject symlinks in dist
+        run: |
+          if [ -n "$(find dist -type l -print -quit)" ]; then
+            echo "Symlink found in dist; refusing to package" >&2
+            exit 1
+          fi
+
       # 2. 生成されたタグ（または手動タグ）がある場合のみ実行
       - name: Zip extension
         if: steps.tag_version.outputs.new_tag || startsWith(github.ref, 'refs/tags/')
