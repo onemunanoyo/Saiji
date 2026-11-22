@@ -68,6 +68,7 @@ function startRerenderWatch(doc: Document, platform: Platform): void {
   const parent = doc.querySelector(sel.watchParent);
   if (!parent) return;
 
+  rerenderObserver?.disconnect();
   rerenderObserver = new MutationObserver(() => {
     // 再レンダリングでボタンが再生成されたら再適用
     applyToElements(doc, platform);
@@ -84,24 +85,29 @@ export function mountCommentLock(platform: Platform): void {
   let attempts = 0;
   const MAX_ATTEMPTS = 20; // 最大10秒待機
 
-  function tryMount(): void {
+  function tryMount(): boolean {
     const doc = getChatDocument(platform);
     if (!doc) {
       // iframe がまだ読み込まれていない場合はリトライ
-      if (++attempts < MAX_ATTEMPTS) return;
+      if (++attempts < MAX_ATTEMPTS) return false;
       clearRetry();
-      return;
+      return false;
     }
 
     const ok = applyToElements(doc, platform);
-    if (!ok && ++attempts < MAX_ATTEMPTS) return;
+    if (!ok) {
+      if (++attempts < MAX_ATTEMPTS) return false;
+      clearRetry();
+      return false;
+    }
 
     clearRetry();
-    if (ok) startRerenderWatch(doc, platform);
+    startRerenderWatch(doc, platform);
+    return true;
   }
 
-  tryMount();
-  if (lockedPlatform) {
+  const mounted = tryMount();
+  if (!mounted && attempts < MAX_ATTEMPTS && lockedPlatform) {
     retryTimer = setInterval(tryMount, 500);
   }
 }
