@@ -1,5 +1,6 @@
 import type { Platform } from '../shared/types';
 import { getChatDocument } from '../shared/selectors';
+import { isImeComposing } from '../shared/keyboard';
 
 // YouTube/Twitch それぞれの送信ボタン・入力欄セレクタ
 const LOCK_SELECTORS = {
@@ -27,7 +28,9 @@ function blockClick(e: Event): void {
 }
 
 function blockEnter(e: Event): void {
-  if ((e as KeyboardEvent).key !== 'Enter') return;
+  const keyboard = e as KeyboardEvent;
+  if (isImeComposing(keyboard)) return;
+  if (keyboard.key !== 'Enter') return;
   e.preventDefault();
   e.stopImmediatePropagation();
 }

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { NgWord, NgWordPlatform } from '../shared/types';
 import { getStorage, addNgWord, removeNgWord, removeBannedId } from '../shared/storage';
 import { t } from '../shared/i18n';
+import { isImeComposing } from '../shared/keyboard';
 import ToxicOptions from './ToxicOptions';
 
 type Tab = 'ngwords' | 'blacklist' | 'ai';
@@ -114,7 +115,7 @@ export default function Options() {
                       style={s.input}
                       value={input}
                       onChange={e => { setInput(e.target.value); setError(''); }}
-                      onKeyDown={e => e.key === 'Enter' && handleAdd()}
+                      onKeyDown={e => { if (isImeComposing(e.nativeEvent)) return; if (e.key === 'Enter') handleAdd(); }}
                       placeholder={t('ng_input_placeholder')}
                   />
                   <button style={s.addBtn} onClick={handleAdd}>{t('add_button')}</button>
