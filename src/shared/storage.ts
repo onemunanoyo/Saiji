@@ -11,13 +11,24 @@ export const DEFAULT_STORAGE: StorageSchema = {
   toxicSettings: structuredClone(DEFAULT_TOXIC_SETTINGS),
 };
 
-function cleanNgWords(words: any[]): NgWord[] {
+function cleanNgWords(words: unknown): NgWord[] {
   if (!Array.isArray(words)) return [];
-  return words.map(w => {
-    if (w && (w.platform === 'youtube' as any)) {
-      return { ...w, platform: 'youtube_live' };
+  return words.flatMap((entry): NgWord[] => {
+    if (typeof entry === 'string') {
+      const word = entry.trim();
+      return word ? [{ word, platform: 'both' }] : [];
     }
-    return w as NgWord;
+    if (!entry || typeof entry !== 'object') return [];
+
+    const raw = entry as { word?: unknown; platform?: unknown };
+    if (typeof raw.word !== 'string') return [];
+    const word = raw.word.trim();
+    if (!word) return [];
+
+    // v1.0.1 renamed 'youtube' to 'youtube_live' without a storage migration.
+    const platform = (raw.platform === 'youtube' ? 'youtube_live' : raw.platform) as NgWord['platform'] | undefined;
+    if (platform !== 'both' && platform !== 'youtube_live' && platform !== 'youtube_normal' && platform !== 'twitch') return [];
+    return [{ word, platform }];
   });
 }
 
