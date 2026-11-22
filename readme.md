@@ -28,7 +28,7 @@ https://chromewebstore.google.com/detail/%E5%A1%9E%E8%80%B3-saiji/onimoeehiofocn
 ```sh
 git clone https://github.com/onemunanoyo/Saiji.git
 cd Saiji
-npm ci
+npm run ci:safe
 npm run build
 ```
 

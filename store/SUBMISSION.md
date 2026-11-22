@@ -1,6 +1,6 @@
 # Store submission handoff
 
-Run `npm ci`, `npm run typecheck`, `npm test`, `npm run package:store`. Upload `release/Saiji-1.1.0-store.zip` (manifest is at ZIP root). `release/extension` is its unpacked equivalent. It contains no model weights, Python, environments, logs, datasets or source maps. The regular dist build can still include local model files.
+Run `npm run ci:safe`, `npm run typecheck`, `npm test`, `npm run package:store`. Upload `release/Saiji-1.1.0-store.zip` (manifest is at ZIP root). `release/extension` is its unpacked equivalent. It contains no model weights, Python, environments, logs, datasets or source maps. The regular dist build can still include local model files.
 
 Use listing-ja/en/ko.txt for translated listings. Category: Productivity (suggested). Single purpose: filter comments on YouTube and Twitch using local rules and an optional experimental Japanese classifier.
 

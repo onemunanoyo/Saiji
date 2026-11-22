@@ -33,7 +33,8 @@ coverage
 bower_components
 
 # node.js "modules" directory
-node_modules/
+# Keep the pattern slash-free so a malicious node_modules symlink is ignored too.
+node_modules
 jspm_packages/
 
 # TypeScript v1 declaration files
@@ -112,11 +113,13 @@ ehthumbs.db
 Thumbs.db
 .claude
 # Local classifier assets
-models/
+# Slash-free so a symlink at this path is ignored as well.
+models
 .venv-classifier/
 .venv-toxic/
 __pycache__/
 *.pyc
 
 # Chrome Web Store packages
-/release/
+# Slash-free so a symlink at this path is ignored as well.
+/release
