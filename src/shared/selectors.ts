@@ -92,6 +92,23 @@ export function getMessageText(el: Element, platform: Platform): string {
       return el.querySelector('#content-text')?.textContent?.trim() ?? '';
     }
   }
+
+  if (platform === 'twitch') {
+    // 追加ノードが行本体の場合とラッパーの場合の両方を扱う。
+    const line = el.matches('.chat-line__message') ? el : el.querySelector('.chat-line__message');
+    if (!line) return '';
+
+    // 行全体には投稿者名が含まれるため、本文コンテナだけを返す。
+    const body = line.querySelector('[data-a-target="chat-line-message-body"], .chat-line__message-body');
+    if (body) return body.textContent?.trim() ?? '';
+
+    // 本文コンテナがない場合は、本文相当のフラグメントだけを結合する。
+    return Array.from(line.querySelectorAll('.text-fragment, .mention-fragment'))
+        .map(fragment => fragment.textContent ?? '')
+        .join('')
+        .trim();
+  }
+
   return el.querySelector(SELECTORS[platform].messageText)?.textContent?.trim() ?? '';
 }
 
