@@ -7,6 +7,14 @@ let generation = 0;
 let lifecycle: Promise<unknown> = Promise.resolve();
 const cache = new Map<string, { response: ToxicResponse; expires: number }>();
 
+export function pruneExpiredCache(now = Date.now()): void {
+  for (const [key, entry] of cache) if (entry.expires <= now) cache.delete(key);
+}
+
+export function toxicCacheSize(): number {
+  return cache.size;
+}
+
 export function isToxicTarget(url?: string): boolean {
   try {
     const parsed = new URL(url ?? '');
@@ -57,8 +65,10 @@ export async function judgeToxic(text: string): Promise<ToxicResponse> {
   if (!settings.enabled) return { ok: false, error: 'disabled' };
   if (!await needed()) return { ok: false, error: 'idle' };
   const key = (settings.backend ?? 'auto') + ':' + text;
+  const now = Date.now();
+  pruneExpiredCache(now);
   const cached = cache.get(key);
-  if (cached && cached.expires > Date.now()) return cached.response;
+  if (cached) return cached.response;
   if (active >= 32) return { ok: false, error: 'busy' };
   active++;
   try {
@@ -67,7 +77,7 @@ export async function judgeToxic(text: string): Promise<ToxicResponse> {
     if (!scores) return { ok: false, error: body?.error ?? 'invalid_scores' };
     const result: ToxicResponse = { ok: true, scores };
     if (cache.size >= 256) cache.delete(cache.keys().next().value!);
-    cache.set(key, { response: result, expires: Date.now() + 60_000 });
+    cache.set(key, { response: result, expires: now + 60_000 });
     return result;
   } catch { return { ok: false, error: 'unavailable' }; }
   finally { active--; }

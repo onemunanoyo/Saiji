@@ -221,3 +221,21 @@ test('a parent hidden while inference is pending prevents an AI hide or count', 
   resolve({ok:true,scores:{...zero(),threat:1}});await tick();
   assert.equal(counted,0);assert.equal(child.dataset.saijiToxic,undefined);
 });
+
+test('expired cache entries are pruned', async () => {
+  const realNow = Date.now;
+  let now = 1_000_000;
+  Date.now = () => now;
+  try {
+    background.pruneExpiredCache(Number.MAX_SAFE_INTEGER);
+    mockBackground(true, async () => ({ ok: true, scores: zero() }));
+    await background.judgeToxic('prune test');
+    assert.equal(background.toxicCacheSize(), 1);
+
+    now += 60_001;
+    background.pruneExpiredCache();
+    assert.equal(background.toxicCacheSize(), 0);
+  } finally {
+    Date.now = realNow;
+  }
+});
